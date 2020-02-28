@@ -1,0 +1,80 @@
+body{
+    margin: 0;
+    background-color: darkseagreen;
+}
+header{
+    background-color: #30477e;
+    padding: 10px;
+}
+h1 {
+    color: white;
+}
+h1, h2, p, a{
+    font-family: Verdana, serif;
+    font-weight: bold;
+    text-decoration: none;
+}
+h1{
+    text-align: center;
+}
+form {
+    padding: 10px;
+    border: 1px solid grey;
+}
+form p{
+    font-weight: normal;
+}
+#mainSection p{
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    text-decoration: none;
+}
+.left{
+    background-color: aliceblue;
+    float: left;
+    width: 60%;
+    padding: 30px 30px 30px 170px;
+}
+.right{
+    float: left;
+    width: 20%;
+    padding: 10px;
+}
+.right p{
+    margin: 1px;
+}
+form{
+    margin: 10px;
+}
+input{
+    margin: 3px 0 3px 0;
+}
+.elem{
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid grey;
+    float: left;
+}
+p .price{
+    color: #009257;
+}
+.elem p{
+    font-family: Sans, sans-serif;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: black;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+#authorSection p{
+    font-weight: normal;
+}
+footer{
+    background-color: cadetblue;
+    padding: 80px;
+    clear: both;
+}
+footer p{
+    font-weight: normal;
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru-RU" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <title>Розміщення телевишок</title>
+        <meta charset="UTF-8">
+        <meta name="author" content="Zul'Jin x Sacrifice x Baal">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        <script>
+
+        </script>
+    </head>
+    <body>
+        <header>
+            <h1>Покриття заданої координатної площини колами</h1>
+        </header>
+        <main>
+            <div class="left">
+                <canvas id="smile" width="650" height="650" style="border: 1px solid black;">
+                    <p>Ваш браузер не поддерживает рисование.</p>
+                </canvas>
+            </div>
+            <div class="right">
+                <form>
+                    <input type="radio" name="canv" value="canv"> Використовувати канвас
+                    <br>
+                    <input type="radio" name="canv" value="goog"> Використовувати GoogleMaps
+                    <hr>
+                    <p>Прочитати координати з файлу</p>
+                    <input type="button" value="Read file">
+                    <p>Збрерігти координати в файл</p>
+                    <input type="button" value="Write file">
+                    <p>Очистити координати</p>
+                    <input type="button" value="Clear">
+                    <hr>
+                    <input type="radio" name="oneOrMany" value="oneC"> Побудувати одне
+                    <br>
+                    <input type="radio" name="oneOrMany" value="manyC"> Побудувати багато кіл
+                    <div class="oneCircle">
+                        <p>Побудувати коло</p>
+                        <input type="button" value="Built one big circle">
+                        <hr>
+                    </div>
+                    <div class="manyCircles" hidden>
+                        <p>Побудувати кола</p>
+                        <input type="button" value="Built many small circles">
+                        <p>Введіть радіус:</p>
+                        <input type="text" name="name" id="radius" value="" placeholder="Введіть радіус">
+                        <hr>
+                    </div>
+                    <p>Result:</p>
+                    <p>x = </p>
+                    <p>y = </p>
+                    <p>r = </p>
+                </form>
+
+
+            </div>
+        </main>
+        <footer>
+            <address>
+                <div>
+                    <p>Контактна інформація:</p>
+                    <p>тел: 1488-666-69-13</p>
+                    <p>адреса: м. Чернівці вул. Небесної Сотні 4б</p>
+                    <p>email: Zul_Jin_x_Sacrifice@Baal.com</p>
+                </div>
+            </address>
+            <a href="#">&copy; Zul'Jin x Sacrifice x Baal</a>
+        </footer>
+    </body>
+</html>
