@@ -1,6 +1,6 @@
 let res = (a)=>{
     let sum = a;
-    function add(b) {
+    function ad(b) {
         if (b) {
             sum += b;
             return sum;
