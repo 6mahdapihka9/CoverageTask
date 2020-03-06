@@ -1,0 +1,3 @@
+funcction few(){
+    
+}
