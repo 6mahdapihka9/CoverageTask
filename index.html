@@ -7,7 +7,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
         <script>
-
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+            ctx.strokeRect(5, 5, 25, 15);
+            ctx.scale(2, 2);
+            ctx.strokeRect(5, 5, 25, 15);
+            ctx.scale(2, 2);
+            ctx.strokeRect(5, 5, 25, 15);
+            ctx.scale(2, 2);
+            ctx.strokeRect(5, 5, 25, 15);
         </script>
     </head>
     <body>
@@ -16,7 +24,7 @@
         </header>
         <main>
             <div class="left">
-                <canvas id="smile" width="800" height="650" style="border: 1px solid black;">
+                <canvas id="canvas" width="800" height="650" style="border: 1px solid black;">
                     <p>Ваш браузер не поддерживает рисование.</p>
                 </canvas>
             </div>

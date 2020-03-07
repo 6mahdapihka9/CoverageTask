@@ -1,25 +1,7 @@
-let res = (a)=>{
-    let sum = a;
-    function ad(b) {
-        if (b) {
-            sum += b;
-            return sum;
-        }
-    }
-    return a;
-};
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-const add = (a) => {
-    let sum = a;
-    const func = (b) => {
-        if (b) {
-            sum += b;
-            return func;
-        } else {
-            return sum;
-        }
-    };
-    return func;
-};
 
-console.log( add(10)(5)(2) );
+ctx.strokeRect(5, 5, 25, 15);
+ctx.scale(2, 2);
+ctx.strokeRect(5, 5, 25, 15);
