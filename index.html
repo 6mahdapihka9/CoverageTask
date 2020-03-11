@@ -6,17 +6,6 @@
         <meta name="author" content="Zul'Jin x Sacrifice x Baal">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
-        <script>
-            var c = document.getElementById("canvas");
-            var ctx = c.getContext("2d");
-            ctx.strokeRect(5, 5, 25, 15);
-            ctx.scale(2, 2);
-            ctx.strokeRect(5, 5, 25, 15);
-            ctx.scale(2, 2);
-            ctx.strokeRect(5, 5, 25, 15);
-            ctx.scale(2, 2);
-            ctx.strokeRect(5, 5, 25, 15);
-        </script>
     </head>
     <body>
         <header>
@@ -24,42 +13,58 @@
         </header>
         <main>
             <div class="left">
-                <canvas id="canvas" width="800" height="650" style="border: 1px solid black;">
-                    <p>Ваш браузер не поддерживает рисование.</p>
-                </canvas>
+                <canvas id="canvas" width="800" height="650">Ваш браузер не поддерживает рисование</canvas>
+                <div id="stats">
+
+                </div>
             </div>
+
             <div class="right">
                 <form>
-                    <input type="radio" name="canv" value="canv"> Використовувати канвас
+                    <label>
+                        <input type="radio" name="canv" value="canv">
+                    </label> Використовувати канвас
                     <br>
-                    <input type="radio" name="canv" value="goog"> Використовувати GoogleMaps
+                    <label>
+                        <input type="radio" name="canv" value="goog">
+                    </label> Використовувати GoogleMaps
                     <hr>
-                    <p>Прочитати координати з файлу</p>
-                    <input type="button" value="Read file">
-                    <p>Збрерігти координати в файл</p>
-                    <input type="button" value="Write file">
-                    <p>Очистити координати</p>
-                    <input type="button" value="Clear">
-                    <hr>
-                    <input type="radio" name="oneOrMany" value="oneC"> Побудувати одне
+
+                    <input type="button" value="Зчитати координати з файлу">
                     <br>
-                    <input type="radio" name="oneOrMany" value="manyC"> Побудувати багато кіл
-                    <div class="oneCircle">
-                        <p>Побудувати коло</p>
-                        <input type="button" value="Built one big circle">
-                        <hr>
+                    <input type="button" value="Записати координати в файл">
+                    <br>
+                    <label>
+                        <input type="checkbox" name="inputByYourself" value="yourself">
+                    </label> Нанести координати вручну
+                    <br>
+                    <input type="button" value="Очистити все" onclick="clearAll()">
+                    <hr>
+
+                    <label>
+                        <input type="checkbox" name="builtOne" value="oneC" >
+                    </label> Побудувати одне коло
+                    <br>
+                    <label>
+                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disable()">
+                    </label> Побудувати багато кіл
+                    <div>
+                        <label>
+                            <input class="many" type="radio" name="withoutIntersections" value="withInter" disabled>
+                        </label> З перетином
+                        <br>
+                        <label>
+                            <input class="many" type="radio" name="withoutIntersections" value="withoutInter" disabled>
+                        </label> Без перетина
+                        <br>
+                        <label for="radius"></label><input class="many" type="text" name="name" id="radius" value="" placeholder="Введіть радіус" disabled>
                     </div>
-                    <div class="manyCircles" hidden>
-                        <p>Побудувати кола</p>
-                        <input type="button" value="Built many small circles">
-                        <p>Введіть радіус:</p>
-                        <input type="text" name="name" id="radius" value="" placeholder="Введіть радіус">
-                        <hr>
-                    </div>
-                    <p>Result:</p>
-                    <p>x = </p>
-                    <p>y = </p>
-                    <p>r = </p>
+                    <hr>
+
+                    <input type="button" value="Подувати" onclick="built()">
+                    <hr>
+
+                    <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
                 </form>
 
 
@@ -77,4 +82,5 @@
             <a href="#">&copy; Zul'Jin x Sacrifice x Baal</a>
         </footer>
     </body>
+    <script src="script.js" language="JavaScript"></script>
 </html>
