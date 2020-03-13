@@ -1,5 +1,7 @@
 const CANVAS = document.getElementById('canvas');
 const CTX = CANVAS.getContext('2d');
+const moveButton = document.getElementById('moveButton');
+const inputByYourself = document.getElementById('inputByYourself');
 let intersectionEachOthers = false;
 //let atAllDots = true;
 let d = [];
@@ -23,12 +25,15 @@ let mouse = {
 CANVAS.onmousemove = function (e) {
     mouse.x = e.offsetX;
     mouse.y = e.offsetY;
+    if (mouse.down && inputByYourself.style.backgroundColor !== "lightblue")
+        //mouse.x-mouse.xPressed
+        redraw( mouse.x-mouse.xPressed , mouse.y-mouse.yPressed );
 };
 CANVAS.onmousedown = function (e) {
     mouse.xPressed = e.offsetX;
     mouse.yPressed = e.offsetY;
     mouse.down = true;
-    if (document.forms[0].inputByYourself.checked) {
+    if (inputByYourself.style.backgroundColor === "lightblue") {
         let newDot = new Dot(mouse.x, mouse.y);
         d.push( newDot );
         /*
@@ -39,7 +44,7 @@ CANVAS.onmousedown = function (e) {
          */
         CTX.strokeStyle = 'red';
         CTX.beginPath();
-        CTX.arc(mouse.x, mouse.y, 1, 0, Math.PI*2, true);
+        CTX.arc(mouse.x, mouse.y, 2, 0, Math.PI*2, true);
         CTX.stroke();
     }
 };
@@ -47,6 +52,23 @@ CANVAS.onmouseup = function (e) {
     mouse.xReleased = e.offsetX;
     mouse.yReleased = e.offsetY;
     mouse.down = false;
+    redraw(0,0);
+};
+inputByYourself.onclick = function(){
+    if (inputByYourself.style.backgroundColor === "white")
+        inputByYourself.style.backgroundColor = "lightblue";
+    else
+        inputByYourself.style.backgroundColor = "white";
+    moveButton.style.backgroundColor = "white";
+    return false;
+};
+moveButton.onclick = () => {
+    if (moveButton.style.backgroundColor === "white")
+        moveButton.style.backgroundColor = "lightblue";
+    else
+        moveButton.style.backgroundColor = "white";
+    inputByYourself.style.backgroundColor = "white";
+    return false;
 };
 class Dot{
     constructor(_x, _y) {
@@ -67,16 +89,26 @@ class Dot{
     };
 }
 function zoom(in_out) {
-    CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
-    CTX.fillStyle = "blue";
-    CTX.beginPath();
-    CTX.scale( (in_out)? scaleRate + 0.25 : scaleRate - 0.25, (in_out)? scaleRate + 0.25 : scaleRate - 0.25 );
-    CTX.arc(100, 100, 100, 0, Math.PI*2, true);
-    CTX.stroke();
-    redraw();
-}
-function redraw() {
 
+
+    CTX.scale( (in_out)? scaleRate + 0.25 : scaleRate - 0.25, (in_out)? scaleRate + 0.25 : scaleRate - 0.25 );
+    redraw(0,0);
+}
+function redraw(xPath, yPath) {
+    grid();
+
+    if (d !== [])
+        for (let dIndex in d){
+            CTX.strokeStyle = 'red';
+            CTX.beginPath();
+            CTX.arc(d[dIndex].x + xPath, d[dIndex].y + yPath, 2, 0, Math.PI*2, true);
+            CTX.stroke();
+        }
+
+    CTX.strokeStyle = 'blue';
+    CTX.beginPath();
+    CTX.arc(Cx + xPath, Cy + yPath, R, 0, Math.PI*2, true);
+    CTX.stroke();
 }
 function grid(){
     CTX.beginPath();
@@ -99,7 +131,7 @@ function built() {
         for (let dIndex in d){
             CTX.strokeStyle = 'red';
             CTX.beginPath();
-            CTX.arc(d[dIndex].x, d[dIndex].y, 1, 0, Math.PI*2, true);
+            CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
             CTX.stroke();
         }
     let form = document.forms[0];
@@ -129,13 +161,19 @@ function builtOne(){
     tempR = Math.sqrt(Math.pow(d[m].x - tempX, 2) + Math.pow(d[m].y - tempY, 2));
     enough = true;
     for (let i = 0; i < d.length; i++)
-    if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.000000001)
+    if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001)
         //if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > tempR*tempR)
         enough = false;
     Cx = tempX; Cy = tempY; R = tempR;
-
+    /*
+    CTX.strokeStyle = 'green';
+    CTX.beginPath();
+    CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
+    CTX.stroke();
+    */
     //three dots
     if (!enough) {
+
         let threeR = max, threeX = 0, threeY = 0;
         console.log("beep");
         for (let i = 0; i < d.length-2; i++)
@@ -154,7 +192,7 @@ function builtOne(){
                 enough = true;
                 for (let iter = 0; iter < d.length; iter++)
                 //if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > Math.round(R*R * 100000000.0)/100000000.0)
-                if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > R*R)
+                if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > R*R + 0.0001)
                     enough = false;
                 console.log("("+d[i].x+";"+d[i].y+") ("+d[j].x+";"+d[j].y+") ("+d[l].x+";"+d[l].y+") " + R + " " + enough);
                 if (enough && R < threeR) {
@@ -162,6 +200,7 @@ function builtOne(){
                 }
             }
         }
+
 
         Cx = threeX;	Cy = threeY;	R = threeR;
         console.log(R);
@@ -198,5 +237,3 @@ function able_disable() {
 function statsExport(){
 
 }
-
-

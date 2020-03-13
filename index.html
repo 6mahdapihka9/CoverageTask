@@ -34,15 +34,13 @@
                     <br>
                     <input type="button" value="Записати координати в файл" onclick="dataExport()">
                     <br>
-                    <label>
-                        <input type="checkbox" name="inputByYourself" value="yourself">
-                    </label> Нанести координати вручну
+                    <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
                     <br>
-                    <input type="button" value="Очистити все" onclick="clearAll()">
+                    <button id="clearAllButton" onclick="clearAll();return false;" style="background-color:#ff5555">Очистити все</button>
                     <hr>
 
                     <label>
-                        <input type="checkbox" name="builtOne" value="oneC" >
+                        <input type="checkbox" name="builtOne" value="oneC" checked>
                     </label> Побудувати одне коло
                     <br>
                     <label>
@@ -61,11 +59,12 @@
                     </div>
                     <hr>
 
-                    <input type="button" value="Подувати" onclick="built()">
+                    <button id="builtButton" onclick="built();return false;" style="background-color:springgreen;">Побудувати</button>
                     <hr>
 
                     <button id="loupePlus" onclick="zoom(true);return false;"><img src="loupePlus.png" alt="Loupe plus" width="32" height="32"></button>
                     <button id="loupeMinus" onclick="zoom(false);return false;"><img src="loupeMinus.png" alt="Loupe minus" width="32" height="32"></button>
+                    <button id="moveButton" style="background-color: white;"><img src="move.png" alt="MoveImg" width="32" height="32"></button>
                     <hr>
 
                     <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
