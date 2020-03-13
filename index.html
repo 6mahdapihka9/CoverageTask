@@ -30,9 +30,9 @@
                     </label> Використовувати GoogleMaps
                     <hr>
 
-                    <input type="button" value="Зчитати координати з файлу">
+                    <input type="button" value="Зчитати координати з файлу" onclick="dataImport()">
                     <br>
-                    <input type="button" value="Записати координати в файл">
+                    <input type="button" value="Записати координати в файл" onclick="dataExport()">
                     <br>
                     <label>
                         <input type="checkbox" name="inputByYourself" value="yourself">
@@ -64,7 +64,13 @@
                     <input type="button" value="Подувати" onclick="built()">
                     <hr>
 
+                    <button id="loupePlus" onclick="zoom(true);return false;"><img src="loupePlus.png" alt="Loupe plus" width="32" height="32"></button>
+                    <button id="loupeMinus" onclick="zoom(false);return false;"><img src="loupeMinus.png" alt="Loupe minus" width="32" height="32"></button>
+                    <hr>
+
                     <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
+                    <input type="button" name="removeStats" value="Приховати статисику" onclick="removeDivStats()">
+                    <input type="button" name="exportStats" value="Записати статистику в файл" onclick="statsExport()">
                 </form>
 
 
