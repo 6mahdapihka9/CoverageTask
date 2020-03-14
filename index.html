@@ -30,9 +30,10 @@
                     </label> Використовувати GoogleMaps
                     <hr>
 
-                    <input type="button" value="Зчитати координати з файлу" onclick="dataImport()">
+                    Зчитати координати з файлу
+                    <input type="file" onchange="dataImport(this)">
                     <br>
-                    <input type="button" value="Записати координати в файл" onclick="dataExport()">
+                    <a id="downloadCoords">Зберігти файл з координатами</a>
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
                     <br>
@@ -44,7 +45,7 @@
                     </label> Побудувати одне коло
                     <br>
                     <label>
-                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disable()">
+                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableManyForms()">
                     </label> Побудувати багато кіл
                     <div>
                         <label>
@@ -78,13 +79,13 @@
         <footer>
             <address>
                 <div>
-                    <p>Контактна інформація:</p>
-                    <p>тел: 1488-666-69-13</p>
-                    <p>адреса: м. Чернівці вул. Небесної Сотні 4б</p>
-                    <p>email: Zul_Jin_x_Sacrifice@Baal.com</p>
+                    <p>Contact info:</p>
+                    <p>Tel: +38(050)152-43-65</p>
+                    <p>Address: м. Чернівці вул. Небесної Сотні 4б</p>
+                    <p>email: shnyger@gmail.com</p>
                 </div>
             </address>
-            <a href="#">&copy; Zul'Jin x Sacrifice x Baal</a>
+            <a href="#">&copy; Zul'Jin x Sacrifice x Baal x Aleksandr Kulesh</a>
         </footer>
     </body>
     <script src="script.js" language="JavaScript"></script>

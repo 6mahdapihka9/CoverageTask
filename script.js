@@ -3,6 +3,7 @@ const CTX = CANVAS.getContext('2d');
 const moveButton = document.getElementById('moveButton');
 const inputByYourself = document.getElementById('inputByYourself');
 let intersectionEachOthers = false;
+let statsShown = false;
 //let atAllDots = true;
 let d = [];
 let scaleRate = 1;
@@ -46,6 +47,7 @@ CANVAS.onmousedown = function (e) {
         CTX.beginPath();
         CTX.arc(mouse.x, mouse.y, 2, 0, Math.PI*2, true);
         CTX.stroke();
+        dataExport();
     }
 };
 CANVAS.onmouseup = function (e) {
@@ -114,12 +116,28 @@ function grid(){
     CTX.beginPath();
     CTX.clearRect(0,0, CANVAS.width, CANVAS.height);
 }
-function dataImport(){
-    //let coordinatesStr;
-    //ToDo
+function dataImport(input){
+    let file = input.files[0];
+    let reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function() {
+        console.log(reader.result);
+
+    };
+    reader.onerror = function() {
+        alert(reader.error);
+    };
 }
 function dataExport(){
-
+    let filename = "OutputCoordinates.txt";
+    let text = "";
+    for (let i = 0; i < d.length; i++)
+        text += d[i].x + " " + d[i].y + "\n";
+    let blob = new Blob([text], {type:'text/plain'});
+    let A = document.getElementById('downloadCoords');
+    A.download = filename;
+    A.innerHTML = "Зберігти файл з координатами";
+    A.href = window.URL.createObjectURL(blob);
 }
 function clearAll() {
     d = [];
@@ -212,28 +230,70 @@ function builtOne(){
 }
 function builtMany(){
     console.log("build many");
+    //by three dots
+    let index = -1;
+    while( dotsToCover.size() > 2 ) {
+        all: for (let i = 0; i < dC.size()-2; i++)
+        for (let j = i+1; j < dC.size()-1; j++) {
+            for (let l = j+1; l < dC.size(); l++) {
+                tempX = -(dC.get(i).y*(dC.get(j).x*dC.get(j).x + dC.get(j).y*dC.get(j).y - dC.get(l).x*dC.get(l).x - dC.get(l).y*dC.get(l).y) +
+                    dC.get(j).y*(dC.get(l).x*dC.get(l).x + dC.get(l).y*dC.get(l).y - dC.get(i).x*dC.get(i).x - dC.get(i).y*dC.get(i).y) +
+                    dC.get(l).y*(dC.get(i).x*dC.get(i).x + dC.get(i).y*dC.get(i).y - dC.get(j).x*dC.get(j).x - dC.get(j).y*dC.get(j).y))/
+                    (2*(dC.get(i).x*(dC.get(j).y-dC.get(l).y) + dC.get(j).x*(dC.get(l).y - dC.get(i).y) + dC.get(l).x*(dC.get(i).y - dC.get(j).y)));
+                tempY = (dC.get(i).x*(dC.get(j).x*dC.get(j).x + dC.get(j).y*dC.get(j).y - dC.get(l).x*dC.get(l).x - dC.get(l).y*dC.get(l).y) +
+                    dC.get(j).x*(dC.get(l).x*dC.get(l).x + dC.get(l).y*dC.get(l).y - dC.get(i).x*dC.get(i).x - dC.get(i).y*dC.get(i).y) +
+                    dC.get(l).x*(dC.get(i).x*dC.get(i).x + dC.get(i).y*dC.get(i).y - dC.get(j).x*dC.get(j).x - dC.get(j).y*dC.get(j).y))/
+                    (2*(dC.get(i).x*(dC.get(j).y-dC.get(l).y) + dC.get(j).x*(dC.get(l).y - dC.get(i).y) + dC.get(l).x*(dC.get(i).y - dC.get(j).y)));
+
+                enough = true;
+                if ((Math.pow(dC.get(i).x-tempX, 2) + Math.pow(dC.get(i).y-tempY, 2)) > smallR*smallR |
+                    (Math.pow(dC.get(j).x-tempX, 2) + Math.pow(dC.get(j).y-tempY, 2)) > smallR*smallR |
+                    (Math.pow(dC.get(l).x-tempX, 2) + Math.pow(dC.get(l).y-tempY, 2)) > smallR*smallR)
+                    enough = false;
+
+                if (enough) {
+                    index++;
+                    SCs.add( new SmallCircle(smallR) );
+                    SCs.get(index).x = tempX;
+                    SCs.get(index).y = tempY;
+                    dC.remove(l);
+                    dC.remove(j);
+                    dC.remove(i);
+                    break all;
+                }
+            }
+        }
+    }
+    //by two dots
+
+    //by one dot
 }
 function addDivStats() {
-    let statsDiv = document.getElementById('stats');
-    let div;
-    div = document.createElement('div');
-    div.style.border = "1px solid black";
-    div.className = "stats";
-    div.innerText = "Точка №" + 0 + ": x = " + 0 + ", y = " + 0 + ", входить в кола: " + "...";
-    statsDiv.append(div);
-    //ToDo make it for all dots
-}
-function removeDivStats() {
-    let divs = document.getElementsByClassName('stats');
-    for (let i = divs.length-1; i >= 0; i--){
-        divs[i].remove();
+    if (d !== [] && !statsShown) {
+        statsShown = true;
+        for (let i = 0; i < d.length; i++) {
+            let statsDiv = document.getElementById('stats');
+            let div;
+            div = document.createElement('div');
+            div.style.border = "1px solid black";
+            div.className = "stats";
+            div.innerText = "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y + ", входить в коло ( " + Cx + " ; " + Cy + " ) R = " + R;
+            statsDiv.append(div);
+        }
     }
 }
-function able_disable() {
-    let inputMany = document.getElementsByClassName('many');
-    for(let i in inputMany)
-        inputMany[i].disabled = !inputMany[i].disabled;
+function removeDivStats() {
+    if (statsShown) {
+        let divs = document.getElementsByClassName('stats');
+        for (let i = divs.length - 1; i >= 0; i--)
+            divs[i].remove();
+    }
 }
 function statsExport(){
 
+}
+function able_disableManyForms() {
+    let inputMany = document.getElementsByClassName('many');
+    for(let i in inputMany)
+        inputMany[i].disabled = !inputMany[i].disabled;
 }
