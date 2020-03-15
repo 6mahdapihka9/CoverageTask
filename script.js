@@ -121,8 +121,16 @@ function dataImport(input){
     let reader = new FileReader();
     reader.readAsText(file);
     reader.onload = function() {
-        console.log(reader.result);
-
+        let arrayStrs = reader.result.split("\n");
+        for (let key in arrayStrs)
+            if (arrayStrs[key] !== "") {
+                let coords = arrayStrs[key].split(" ");
+                if (coords.length === 2 && typeof(+coords[0]) === "number" && typeof(+coords[1]) === "number") {
+                    let newDot = new Dot(coords[0], coords[1]);
+                    d.push(newDot);
+                    dataExport();
+                }
+            }
     };
     reader.onerror = function() {
         alert(reader.error);
@@ -227,6 +235,7 @@ function builtOne(){
     CTX.beginPath();
     CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
     CTX.stroke();
+    statsExport();
 }
 function builtMany(){
     console.log("build many");
@@ -267,6 +276,7 @@ function builtMany(){
     //by two dots
 
     //by one dot
+    statsExport();
 }
 function addDivStats() {
     if (d !== [] && !statsShown) {
@@ -290,9 +300,17 @@ function removeDivStats() {
     }
 }
 function statsExport(){
-
+    let filename = "Stats.txt";
+    let text = "";
+    for (let i = 0; i < d.length; i++)
+        text += "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y + ", входить в коло ( " + Cx + " ; " + Cy + " ) R = " + R + "\n";
+    let blob = new Blob([text], {type:'text/plain'});
+    let A = document.getElementById('exportStats');
+    A.download = filename;
+    A.innerHTML = "Записати статистику в файл";
+    A.href = window.URL.createObjectURL(blob);
 }
-function able_disableManyForms() {
+function able_disableFormsMany() {
     let inputMany = document.getElementsByClassName('many');
     for(let i in inputMany)
         inputMany[i].disabled = !inputMany[i].disabled;

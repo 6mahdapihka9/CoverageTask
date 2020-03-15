@@ -22,11 +22,11 @@
             <div class="right">
                 <form>
                     <label>
-                        <input type="radio" name="canv" value="canv">
+                        <input type="radio" name="canv" value="canv" checked>
                     </label> Використовувати канвас
                     <br>
                     <label>
-                        <input type="radio" name="canv" value="goog">
+                        <input type="radio" name="canv" value="goog" disabled>
                     </label> Використовувати GoogleMaps
                     <hr>
 
@@ -45,7 +45,7 @@
                     </label> Побудувати одне коло
                     <br>
                     <label>
-                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableManyForms()">
+                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableFormsMany()">
                     </label> Побудувати багато кіл
                     <div>
                         <label>
@@ -70,7 +70,8 @@
 
                     <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
                     <input type="button" name="removeStats" value="Приховати статисику" onclick="removeDivStats()">
-                    <input type="button" name="exportStats" value="Записати статистику в файл" onclick="statsExport()">
+                    <br>
+                    <a id="exportStats">Записати статистику в файл</a>
                 </form>
 
 
