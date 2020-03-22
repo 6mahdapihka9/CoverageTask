@@ -1,12 +1,14 @@
 body{
     margin: 0;
-    background-color: darkseagreen;
+    background-color: mediumpurple;//darkseagreen
 }
 header{
-    background-color: #30477e;
+    //background-color: #30477e;
+    background-color: indigo;
     padding: 10px;
 }
 h1, h2, p, a{
+    //color: white;
     font-family: inherit;
     font-weight: bold;
     text-decoration: none;
@@ -17,13 +19,14 @@ h1 {
     text-align: center;
 }
 form {
+    color: black;
     font-weight: bold;
-    color: #303030;
+    //color: #303030;
     padding: 10px;
     border: 1px solid grey;
 }
 .left{
-    background-color: aliceblue;
+    background-color: #b592ff;//aliceblue;
     float: left;
     width: 60%;
     padding: 30px 30px 30px 170px;
@@ -43,11 +46,12 @@ input{
     margin: 3px 0 3px 0;
 }
 footer{
-    background-color: cadetblue;
+    background-color: rebeccapurple;//cadetblue;
     padding: 80px;
     clear: both;
 }
-footer p{
+footer p, footer a{
+    color: white;
     font-weight: normal;
 }
 #canvas{

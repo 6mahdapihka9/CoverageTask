@@ -1,17 +1,15 @@
 const CANVAS = document.getElementById('canvas');
 const CTX = CANVAS.getContext('2d');
+CTX.save();
 const moveButton = document.getElementById('moveButton');
 const inputByYourself = document.getElementById('inputByYourself');
 let intersectionEachOthers = false;
 let statsShown = false;
-//let atAllDots = true;
+let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
+let scaleRate = 1, newScaleRate = 1;
 let d = [];
-let scaleRate = 1;
-let Cx, Cy, R,
-    tempX, tempY, tempR,
-    lenX, lenY,
-    smallR = 1;
-let inpX, inpY;
+let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
+let xTest = -100, yTest = -100;
 let enough; //enough to draw circle
 let mouse = {
     xPressed : 0,
@@ -22,41 +20,39 @@ let mouse = {
     yReleased : 0,
     down: false
 };
-
-CANVAS.onmousemove = function (e) {
-    mouse.x = e.offsetX;
-    mouse.y = e.offsetY;
-    if (mouse.down && inputByYourself.style.backgroundColor !== "lightblue")
-        //mouse.x-mouse.xPressed
-        redraw( mouse.x-mouse.xPressed , mouse.y-mouse.yPressed );
-};
-CANVAS.onmousedown = function (e) {
+CANVAS.onmousedown = (e) => {
     mouse.xPressed = e.offsetX;
     mouse.yPressed = e.offsetY;
     mouse.down = true;
     if (inputByYourself.style.backgroundColor === "lightblue") {
-        let newDot = new Dot(mouse.x, mouse.y);
+        let newDot = new Dot(mouse.xPressed * scaleRate, mouse.yPressed * scaleRate);
         d.push( newDot );
-        /*
-        for (let i = 0; i < dots.length; i++)
-            for (let k in dots[i])
-                console.log( k  + " " + dots[i][k]);
-
-         */
         CTX.strokeStyle = 'red';
         CTX.beginPath();
-        CTX.arc(mouse.x, mouse.y, 2, 0, Math.PI*2, true);
+        CTX.arc(mouse.xPressed, mouse.yPressed, 2, 0, Math.PI*2, true);
         CTX.stroke();
         dataExport();
     }
 };
-CANVAS.onmouseup = function (e) {
-    mouse.xReleased = e.offsetX;
-    mouse.yReleased = e.offsetY;
-    mouse.down = false;
-    redraw(0,0);
+CANVAS.onmousemove = (e) => {
+    //console.log(e.offsetX + " " + e.offsetY);
+    if (mouse.down && moveButton.style.backgroundColor === "lightblue") {
+        mouse.x = e.offsetX;
+        mouse.y = e.offsetY;
+        xTranslateTo = mouse.xReleased + mouse.x - mouse.xPressed;
+        yTranslateTo = mouse.yReleased + mouse.y - mouse.yPressed;
+        blankCanvas();
+        redraw();
+    }
 };
-inputByYourself.onclick = function(){
+CANVAS.onmouseup = () => {
+    mouse.xReleased = xTranslated;
+    mouse.yReleased = yTranslated;
+    mouse.down = false;
+    //console.log(mouse.xReleased + " " + mouse.yReleased);
+    //console.log(xTranslated + " " + yTranslated);
+};
+inputByYourself.onclick = () => {
     if (inputByYourself.style.backgroundColor === "white")
         inputByYourself.style.backgroundColor = "lightblue";
     else
@@ -81,40 +77,50 @@ class Dot{
             this.x = 0;
             this.y = 0;
         }
-        this.r = 0;
-        this.diff = 0;
-        this.covered = false;
     }
-    Diff (_x, _y, _R) {
-        this.r = Math.sqrt(Math.pow(this.x - _x, 2) + Math.pow(this.y - _y, 2));
-        this.diff = _R - this.r;
-    };
+}
+function blankCanvas(){
+    CTX.scale(1/scaleRate,1/scaleRate);
+
+    CTX.translate(-xTranslated, -yTranslated);
+    CTX.beginPath();
+    CTX.clearRect(0,0, CANVAS.width, CANVAS.height);
+
+    CTX.scale(scaleRate, scaleRate);
+
+    CTX.translate(xTranslateTo, yTranslateTo);
+    xTranslated = xTranslateTo;
+    yTranslated = yTranslateTo;
+
+    CTX.scale(1/scaleRate,1/scaleRate);
+    CTX.scale(newScaleRate, newScaleRate);
+    scaleRate = newScaleRate;
 }
 function zoom(in_out) {
-
-
-    CTX.scale( (in_out)? scaleRate + 0.25 : scaleRate - 0.25, (in_out)? scaleRate + 0.25 : scaleRate - 0.25 );
-    redraw(0,0);
+    newScaleRate = (in_out)? scaleRate / 0.5 : scaleRate * 0.5;
+    blankCanvas();
+    redraw();
 }
-function redraw(xPath, yPath) {
-    grid();
-
+function redraw() {
     if (d !== [])
         for (let dIndex in d){
             CTX.strokeStyle = 'red';
             CTX.beginPath();
-            CTX.arc(d[dIndex].x + xPath, d[dIndex].y + yPath, 2, 0, Math.PI*2, true);
+            CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
             CTX.stroke();
         }
-
+/*
     CTX.strokeStyle = 'blue';
     CTX.beginPath();
-    CTX.arc(Cx + xPath, Cy + yPath, R, 0, Math.PI*2, true);
+    CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
     CTX.stroke();
-}
-function grid(){
+
+    CTX.strokeStyle = 'darkgoldenrod';
     CTX.beginPath();
-    CTX.clearRect(0,0, CANVAS.width, CANVAS.height);
+    CTX.arc(Cx, Cy, 2, 0, Math.PI*2, true);
+    CTX.stroke();
+
+     */
 }
 function dataImport(input){
     let file = input.files[0];
@@ -149,10 +155,10 @@ function dataExport(){
 }
 function clearAll() {
     d = [];
-    grid();
+    blankCanvas();
 }
 function built() {
-    grid();
+    blankCanvas();
     if (d !== [])
         for (let dIndex in d){
             CTX.strokeStyle = 'red';
@@ -169,71 +175,72 @@ function built() {
 function builtOne(){
     console.log("build one");
     //two dots
+    //выбор двух опорных точок между которыми самое большое растояние, чтобы построить на них окружность
+    //
     let k = 0, m = 0, n = 0;
     let max = 0, dist = [ d.length*(d.length-1)/2 ];
 
     for (let i = 0; i < d.length-1; i++)
-    for (let j = i+1; j < d.length; j++) {
-        lenX = Math.abs(d[i].x - d[j].x);
-        lenY = Math.abs(d[i].y - d[j].y);
-        dist[k] = Math.sqrt(Math.pow(lenX, 2) + Math.pow(lenY,2));
-        if(max < dist[k]) {
-            max = dist[k];	m = i;	n = j;
+        for (let j = i+1; j < d.length; j++) {
+            lenX = Math.abs(d[i].x - d[j].x);
+            lenY = Math.abs(d[i].y - d[j].y);
+            dist[k] = Math.sqrt(Math.pow(lenX, 2) + Math.pow(lenY,2));
+            if(max < dist[k]) {
+                max = dist[k];	m = i;	n = j;
+            }
+            k++;
         }
-        k++;
-    }
     tempX = (d[m].x + d[n].x)/2;
     tempY = (d[m].y + d[n].y)/2;
     tempR = Math.sqrt(Math.pow(d[m].x - tempX, 2) + Math.pow(d[m].y - tempY, 2));
     enough = true;
+    //проверка все ли точки входят в этот круг
     for (let i = 0; i < d.length; i++)
-    if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001)
+        if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001)
         //if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > tempR*tempR)
-        enough = false;
+            enough = false;
     Cx = tempX; Cy = tempY; R = tempR;
-    /*
+/*
     CTX.strokeStyle = 'green';
     CTX.beginPath();
     CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
     CTX.stroke();
-    */
+*/
     //three dots
     if (!enough) {
-
         let threeR = max, threeX = 0, threeY = 0;
-        console.log("beep");
-        for (let i = 0; i < d.length-2; i++)
-        for (let j = i+1; j < d.length-1; j++) {
-            for (let l = j+1; l < d.length; l++) {
-                Cx = -(d[i].y*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
-                    d[j].y*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
-                    d[l].y*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
-                    (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
-                Cy = (d[i].x*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
-                    d[j].x*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
-                    d[l].x*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
-                    (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
-                R = Math.sqrt( Math.pow(d[i].x - Cx, 2) + Math.pow(d[i].y - Cy, 2));
+        for (let l = 0; l < d.length; l++)
+            if (l !== n && l !== m) {
+                Cx = -(d[n].y * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
+                    d[m].y * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
+                    d[l].y * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
+                    (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
+                Cy = (d[n].x * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
+                    d[m].x * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
+                    d[l].x * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
+                    (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
+                R = Math.sqrt(Math.pow(d[n].x - Cx, 2) + Math.pow(d[n].y - Cy, 2));
 
                 enough = true;
                 for (let iter = 0; iter < d.length; iter++)
-                //if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > Math.round(R*R * 100000000.0)/100000000.0)
-                if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > R*R + 0.0001)
-                    enough = false;
-                console.log("("+d[i].x+";"+d[i].y+") ("+d[j].x+";"+d[j].y+") ("+d[l].x+";"+d[l].y+") " + R + " " + enough);
+                    if ((Math.pow(d[iter].x - Cx, 2) + Math.pow(d[iter].y - Cy, 2)) > R * R + 0.0001)
+                        enough = false;
+
                 if (enough && R < threeR) {
-                    threeX = Cx;	threeY = Cy;	threeR = R;
+                    threeX = Cx;
+                    threeY = Cy;
+                    threeR = R;
                 }
             }
-        }
-
-
         Cx = threeX;	Cy = threeY;	R = threeR;
-        console.log(R);
     }
     CTX.strokeStyle = 'blue';
     CTX.beginPath();
     CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
+    CTX.stroke();
+    CTX.strokeStyle = 'darkgoldenrod';
+    CTX.beginPath();
+    CTX.arc(Cx, Cy, 2, 0, Math.PI*2, true);
     CTX.stroke();
     statsExport();
 }
@@ -315,3 +322,31 @@ function able_disableFormsMany() {
     for(let i in inputMany)
         inputMany[i].disabled = !inputMany[i].disabled;
 }
+
+/*
+менее еффективный способ перебора всех возможных кругов построенных по трём точкам
+for (let i = 0; i < d.length-2; i++)
+    for (let j = i+1; j < d.length-1; j++) {
+        for (let l = j+1; l < d.length; l++) {
+            Cx = -(d[i].y*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
+                d[j].y*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
+                d[l].y*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
+                (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
+            Cy = (d[i].x*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
+                d[j].x*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
+                d[l].x*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
+                (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
+            R = Math.sqrt( Math.pow(d[i].x - Cx, 2) + Math.pow(d[i].y - Cy, 2));
+
+            enough = true;
+            for (let iter = 0; iter < d.length; iter++)
+            //if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > Math.round(R*R * 100000000.0)/100000000.0)
+            if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > R*R + 0.0001)
+                enough = false;
+            console.log("("+d[i].x+";"+d[i].y+") ("+d[j].x+";"+d[j].y+") ("+d[l].x+";"+d[l].y+") " + R + " " + enough);
+            if (enough && R < threeR) {
+                threeX = Cx;	threeY = Cy;	threeR = R;
+            }
+        }
+    }
+*/
