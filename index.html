@@ -33,9 +33,11 @@
                     Зчитати координати з файлу
                     <input type="file" onchange="dataImport(this)">
                     <br>
-                    <a id="downloadCoords">Зберігти файл з координатами</a>
+                    <a id="downloadCoords">Зберегти файл з координатами</a>
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
+                    <br>
+                    <input type="file" onchange="addImage(this)">
                     <br>
                     <button id="clearAllButton" onclick="clearAll();return false;" style="background-color:#ff5555">Очистити все</button>
                     <hr>

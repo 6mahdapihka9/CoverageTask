@@ -61,4 +61,8 @@ footer p, footer a{
     background-color: white;
     cursor: pointer;
 }
+#downloadCoords, #exportStats{
+    background-color: white;
+    font-weight: normal;
+}
 

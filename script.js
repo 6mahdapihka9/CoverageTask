@@ -9,38 +9,44 @@ let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
 let d = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
+let hasImage = false;
 let xTest = -100, yTest = -100;
 let enough; //enough to draw circle
+let form = document.forms[0];
 let mouse = {
-    xPressed : 0,
-    yPressed : 0,
-    x: 0,
-    y: 0,
+    xPm : 0,
+    yPm : 0,
+    xPd : 0,
+    yPd : 0,
+    xNow: 0,
+    yNow: 0,
     xReleased : 0,
     yReleased : 0,
     down: false
 };
 CANVAS.onmousedown = (e) => {
-    mouse.xPressed = e.offsetX;
-    mouse.yPressed = e.offsetY;
+    mouse.xPm = e.offsetX;
+    mouse.yPm = e.offsetY;
+    mouse.xPd = (e.offsetX - xTranslated) / scaleRate;
+    mouse.yPd = (e.offsetY - yTranslated) / scaleRate;
     mouse.down = true;
     if (inputByYourself.style.backgroundColor === "lightblue") {
-        let newDot = new Dot(mouse.xPressed * scaleRate, mouse.yPressed * scaleRate);
+        let newDot = new Dot(mouse.xPd, mouse.yPd);
         d.push( newDot );
         CTX.strokeStyle = 'red';
         CTX.beginPath();
-        CTX.arc(mouse.xPressed, mouse.yPressed, 2, 0, Math.PI*2, true);
+        CTX.arc(mouse.xPd, mouse.yPd, 2, 0, Math.PI*2, true);
         CTX.stroke();
         dataExport();
     }
+    console.log(mouse.xPm + " " + mouse.yPm);
 };
 CANVAS.onmousemove = (e) => {
-    //console.log(e.offsetX + " " + e.offsetY);
     if (mouse.down && moveButton.style.backgroundColor === "lightblue") {
-        mouse.x = e.offsetX;
-        mouse.y = e.offsetY;
-        xTranslateTo = mouse.xReleased + mouse.x - mouse.xPressed;
-        yTranslateTo = mouse.yReleased + mouse.y - mouse.yPressed;
+        mouse.xNow = e.offsetX;
+        mouse.yNow = e.offsetY;
+        xTranslateTo = mouse.xReleased + mouse.xNow - mouse.xPm;
+        yTranslateTo = mouse.yReleased + mouse.yNow - mouse.yPm;
         blankCanvas();
         redraw();
     }
@@ -49,8 +55,6 @@ CANVAS.onmouseup = () => {
     mouse.xReleased = xTranslated;
     mouse.yReleased = yTranslated;
     mouse.down = false;
-    //console.log(mouse.xReleased + " " + mouse.yReleased);
-    //console.log(xTranslated + " " + yTranslated);
 };
 inputByYourself.onclick = () => {
     if (inputByYourself.style.backgroundColor === "white")
@@ -79,22 +83,31 @@ class Dot{
         }
     }
 }
+function addImage(input) {
+
+}
 function blankCanvas(){
-    CTX.scale(1/scaleRate,1/scaleRate);
-
-    CTX.translate(-xTranslated, -yTranslated);
+    //очистить канвас
     CTX.beginPath();
-    CTX.clearRect(0,0, CANVAS.width, CANVAS.height);
+    if (scaleRate >= 1)
+        CTX.clearRect(-100000000, -100000000, 1000000000, 1000000000);
+    else
+        CTX.clearRect(-100000000, -100000000, 1000000000, 1000000000);
 
-    CTX.scale(scaleRate, scaleRate);
+    //вернуть масштаб к 1:1
+    CTX.scale(1/scaleRate,1/scaleRate);
+    //вернуть точку отсчета на 0,0
+    CTX.translate(-xTranslated, -yTranslated);
 
+    //переместить точку отсчета на ...
     CTX.translate(xTranslateTo, yTranslateTo);
     xTranslated = xTranslateTo;
     yTranslated = yTranslateTo;
 
-    CTX.scale(1/scaleRate,1/scaleRate);
+    //применить новый масштаб
     CTX.scale(newScaleRate, newScaleRate);
     scaleRate = newScaleRate;
+
 }
 function zoom(in_out) {
     newScaleRate = (in_out)? scaleRate / 0.5 : scaleRate * 0.5;
@@ -109,7 +122,7 @@ function redraw() {
             CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
             CTX.stroke();
         }
-/*
+
     CTX.strokeStyle = 'blue';
     CTX.beginPath();
     CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
@@ -119,8 +132,6 @@ function redraw() {
     CTX.beginPath();
     CTX.arc(Cx, Cy, 2, 0, Math.PI*2, true);
     CTX.stroke();
-
-     */
 }
 function dataImport(input){
     let file = input.files[0];
@@ -132,9 +143,12 @@ function dataImport(input){
             if (arrayStrs[key] !== "") {
                 let coords = arrayStrs[key].split(" ");
                 if (coords.length === 2 && typeof(+coords[0]) === "number" && typeof(+coords[1]) === "number") {
-                    let newDot = new Dot(coords[0], coords[1]);
+                    let newDot = new Dot(+coords[0], +coords[1]);
                     d.push(newDot);
                     dataExport();
+                } else {
+                    alert("Incorrect data!");
+                    break;
                 }
             }
     };
@@ -145,17 +159,22 @@ function dataImport(input){
 function dataExport(){
     let filename = "OutputCoordinates.txt";
     let text = "";
+
     for (let i = 0; i < d.length; i++)
         text += d[i].x + " " + d[i].y + "\n";
     let blob = new Blob([text], {type:'text/plain'});
     let A = document.getElementById('downloadCoords');
     A.download = filename;
-    A.innerHTML = "Зберігти файл з координатами";
+    A.innerHTML = "Зберегти файл з координатами";
     A.href = window.URL.createObjectURL(blob);
 }
 function clearAll() {
     d = [];
+    Cx = Cy = R = xTranslateTo = yTranslateTo = 0;
+    newScaleRate = 1;
     blankCanvas();
+    dataExport();
+    statsExport();
 }
 function built() {
     blankCanvas();
@@ -166,7 +185,6 @@ function built() {
             CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
             CTX.stroke();
         }
-    let form = document.forms[0];
     if (form.builtOne.checked)
         builtOne();
     if (form.builtMany.checked)
