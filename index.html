@@ -37,8 +37,21 @@
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
                     <br>
-                    <input type="file" onchange="addImage(this)">
+
+                    Додати зображення
                     <br>
+                    <label>
+                        <input type="radio" name="lgURL" value="lURL" onchange="able_disableFormsAddImage(); return false;" checked>
+                    </label> З комп'ютера
+                    <input class="lgURL" type="file" onchange="addImage(this, true); return false;">
+                    <br>
+                    <label>
+                        <input type="radio" name="lgURL" value="gURL" onchange="able_disableFormsAddImage(); return false;" >
+                    </label> URL адреса
+                    <label for="UrlSrc"></label>
+                    <input class="lgURL" type="text" name="name" id="UrlSrc" value="" placeholder="Введіть посилання" onsubmit="addImage(this, false); return false;" disabled>
+                    <br>
+
                     <button id="clearAllButton" onclick="clearAll();return false;" style="background-color:#ff5555">Очистити все</button>
                     <hr>
 

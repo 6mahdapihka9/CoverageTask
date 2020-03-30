@@ -9,10 +9,14 @@ let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
 let d = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
-let hasImage = false;
 let xTest = -100, yTest = -100;
 let enough; //enough to draw circle
 let form = document.forms[0];
+let imageAdded = true;
+let imgPath = 'img/map.png';
+let imgObj = new Image();
+imgObj.src = imgPath;
+let inputImg = document.getElementsByClassName('lgURL');
 let mouse = {
     xPm : 0,
     yPm : 0,
@@ -83,8 +87,25 @@ class Dot{
         }
     }
 }
-function addImage(input) {
+function addImage(input, local_global) {
+    if (local_global) {
 
+        let file = input.files[0];
+        imgObj.src = file.getAsDataURl();
+
+        var upload_field = document.getElementById("uploaded_image");
+        upload_field.onchange = function () {
+            var preview_image = document.getElementById("preview_image");
+
+            if ("files" in upload_field && "getAsDataURL" in upload_field.files[0]) {
+                preview_image.src = upload_field.files[0].getAsDataURL();
+            } else {
+                alert("К сожалению, Ваш браузер не поддерживает метод 'getAsDataURL'");
+            }
+        }
+    } else {
+
+    }
 }
 function blankCanvas(){
     //очистить канвас
@@ -107,7 +128,6 @@ function blankCanvas(){
     //применить новый масштаб
     CTX.scale(newScaleRate, newScaleRate);
     scaleRate = newScaleRate;
-
 }
 function zoom(in_out) {
     newScaleRate = (in_out)? scaleRate / 0.5 : scaleRate * 0.5;
@@ -115,6 +135,9 @@ function zoom(in_out) {
     redraw();
 }
 function redraw() {
+    if (imageAdded)
+        CTX.drawImage(imgObj, 0, 0);
+
     if (d !== [])
         for (let dIndex in d){
             CTX.strokeStyle = 'red';
@@ -136,6 +159,7 @@ function redraw() {
 function dataImport(input){
     let file = input.files[0];
     let reader = new FileReader();
+    console.log( file );
     reader.readAsText(file);
     reader.onload = function() {
         let arrayStrs = reader.result.split("\n");
@@ -334,6 +358,10 @@ function statsExport(){
     A.download = filename;
     A.innerHTML = "Записати статистику в файл";
     A.href = window.URL.createObjectURL(blob);
+}
+function able_disableFormsAddImage() {
+    for(let i in inputImg)
+        inputImg[i].disabled = !inputImg[i].disabled;
 }
 function able_disableFormsMany() {
     let inputMany = document.getElementsByClassName('many');
