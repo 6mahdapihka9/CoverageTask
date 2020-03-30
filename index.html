@@ -49,7 +49,9 @@
                         <input type="radio" name="lgURL" value="gURL" onchange="able_disableFormsAddImage(); return false;" >
                     </label> URL адреса
                     <label for="UrlSrc"></label>
-                    <input class="lgURL" type="text" name="name" id="UrlSrc" value="" placeholder="Введіть посилання" onsubmit="addImage(this, false); return false;" disabled>
+                    <input class="lgURL" type="text" id="UrlSrc" name="imageUrl" placeholder="Введіть посилання" onchange="addImage(this, false); return false;" disabled>
+                    <br>
+                    <button id="deleteImage" onclick="addImage(); return false;" >Видалити зображення</button>
                     <br>
 
                     <button id="clearAllButton" onclick="clearAll();return false;" style="background-color:#ff5555">Очистити все</button>

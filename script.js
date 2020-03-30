@@ -3,20 +3,27 @@ const CTX = CANVAS.getContext('2d');
 CTX.save();
 const moveButton = document.getElementById('moveButton');
 const inputByYourself = document.getElementById('inputByYourself');
-let intersectionEachOthers = false;
+const inputImg = document.getElementsByClassName('lgURL');
+const inputMany = document.getElementsByClassName('many');
+let form = document.forms[0];
+
 let statsShown = false;
 let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
+//let xTest = -100, yTest = -100;
+
+//alorightm variables
 let d = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
-let xTest = -100, yTest = -100;
 let enough; //enough to draw circle
-let form = document.forms[0];
+//let intersectionEachOthers = false;
+
+//image
 let imageAdded = true;
 let imgPath = 'img/map.png';
 let imgObj = new Image();
 imgObj.src = imgPath;
-let inputImg = document.getElementsByClassName('lgURL');
+
 let mouse = {
     xPm : 0,
     yPm : 0,
@@ -88,23 +95,35 @@ class Dot{
     }
 }
 function addImage(input, local_global) {
+    //ToDo MIME-типа
     if (local_global) {
-
-        let file = input.files[0];
-        imgObj.src = file.getAsDataURl();
-
-        var upload_field = document.getElementById("uploaded_image");
-        upload_field.onchange = function () {
-            var preview_image = document.getElementById("preview_image");
-
-            if ("files" in upload_field && "getAsDataURL" in upload_field.files[0]) {
-                preview_image.src = upload_field.files[0].getAsDataURL();
-            } else {
-                alert("К сожалению, Ваш браузер не поддерживает метод 'getAsDataURL'");
-            }
+        try{
+            let file = input.files[0];
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function() {
+                if (typeof(reader.result) === "string")
+                    imgObj.src = reader.result;
+            };
+            reader.onerror = function() {
+                alert(reader.error);
+            };
+            imageAdded = true;
+        } catch (e) {
+            console.log( e );
         }
+    } else if (local_global === undefined) {
+        imgObj.src = 'img/def.png';
+        blankCanvas();
+        redraw();
+        imageAdded = false;
     } else {
-
+        try {
+            imgObj.src = form.imageUrl.value;
+            imageAdded = true;
+        } catch (e) {
+            console.log( e );
+        }
     }
 }
 function blankCanvas(){
@@ -159,7 +178,6 @@ function redraw() {
 function dataImport(input){
     let file = input.files[0];
     let reader = new FileReader();
-    console.log( file );
     reader.readAsText(file);
     reader.onload = function() {
         let arrayStrs = reader.result.split("\n");
@@ -196,23 +214,20 @@ function clearAll() {
     d = [];
     Cx = Cy = R = xTranslateTo = yTranslateTo = 0;
     newScaleRate = 1;
+    imageAdded = false;
     blankCanvas();
     dataExport();
     statsExport();
 }
 function built() {
     blankCanvas();
-    if (d !== [])
-        for (let dIndex in d){
-            CTX.strokeStyle = 'red';
-            CTX.beginPath();
-            CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
-            CTX.stroke();
-        }
-    if (form.builtOne.checked)
-        builtOne();
-    if (form.builtMany.checked)
-        builtMany();
+    if (d.length !== 0) {
+        if (form.builtOne.checked)
+            builtOne();
+        if (form.builtMany.checked)
+            builtMany();
+    }
+    redraw();
 }
 function builtOne(){
     console.log("build one");
@@ -276,14 +291,6 @@ function builtOne(){
             }
         Cx = threeX;	Cy = threeY;	R = threeR;
     }
-    CTX.strokeStyle = 'blue';
-    CTX.beginPath();
-    CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
-    CTX.stroke();
-    CTX.strokeStyle = 'darkgoldenrod';
-    CTX.beginPath();
-    CTX.arc(Cx, Cy, 2, 0, Math.PI*2, true);
-    CTX.stroke();
     statsExport();
 }
 function builtMany(){
@@ -364,7 +371,6 @@ function able_disableFormsAddImage() {
         inputImg[i].disabled = !inputImg[i].disabled;
 }
 function able_disableFormsMany() {
-    let inputMany = document.getElementsByClassName('many');
     for(let i in inputMany)
         inputMany[i].disabled = !inputMany[i].disabled;
 }
