@@ -48,7 +48,7 @@
                     <br>
                     <label>
                         <input type="radio" name="lgURL" value="gURL" onchange="able_disableFormsAddImage(); return false;" >
-                    </label> URL <адреса>                                                                                                                                                                                                                                                                           </адреса>
+                    </label> URL адреса                                                                                                                                                                                                                                                                         </адреса>
                     <label for="UrlSrc"></label>
                     <input id="UrlSrc" class="lgURL" type="text" name="imageUrl" placeholder="Введіть посилання" onchange="addImage(this, false); return false;" disabled>
                     <hr>
@@ -64,7 +64,7 @@
                     </label> Побудувати одне коло
                     <br>
                     <label>
-                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableFormsMany()">
+                        <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableFormsMany()" checked>
                     </label> Побудувати багато кіл
                     <!--
                     <div>
@@ -78,7 +78,7 @@
                     </div>
                     -->
                     <br>
-                    <label for="radius"></label><input id="radius" class="many" type="text" name="radius" placeholder="Введіть радіус" disabled>
+                    <label for="radius"></label><input id="radius" class="many" type="text" name="radius" placeholder="Введіть радіус">
                     <hr>
 
                     <button id="builtButton" onclick="built();return false;" style="background-color:springgreen;">Побудувати</button>
@@ -89,7 +89,7 @@
                     <button id="moveButton" style="background-color: white;"><img src="move.png" alt="MoveImg" width="32" height="32"></button>
                     <hr>
 
-                    <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
+                    <input id="addStats" type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()" hidden>
                     <input type="button" name="removeStats" value="Приховати статисику" onclick="removeDivStats()">
                     <br>
                     <a id="exportStats" hidden>Записати статистику в файл</a>

@@ -3,6 +3,7 @@ const CANVAS = document.getElementById('canvas');
 const CTX = CANVAS.getContext('2d');
 const aDownloadCoords = document.getElementById('downloadCoords');
 const expStats = document.getElementById('exportStats');
+const addStats = document.getElementById('addStats');
 const moveButton = document.getElementById('moveButton');
 const unButton = document.getElementById('undoButton');
 const inputByYourself = document.getElementById('inputByYourself');
@@ -23,7 +24,7 @@ let scaleRate = 1, newScaleRate = 1;
 //algorithm variables
 let d = [], dist = [], circles = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
-let minDistGlob = 100000000, minDist;
+let minDistGlob = 100000000;
 let enoughOne; //is radius big enough to draw a circle
 //let intersectionEachOthers = false;
 
@@ -105,6 +106,7 @@ class Dot{
             this.y = 0;
         }
         this.covered = false;
+        this.coveredBy = undefined;
     }
 }
 class Dist {
@@ -120,7 +122,6 @@ class Circle {
         this.x = 0;
         this.y = 0;
         this.dotsCovered = 0;
-        this.diam = _dist;
     }
 }
 function blankCanvas(){
@@ -310,8 +311,10 @@ function clearAll() {
     imageAdded = false;
     aDownloadCoords.hidden = true;
     expStats.hidden = true;
+    addStats.hidden = true;
     unButton.disabled = true;
     imgObj.src = imgPathDef;
+    expStats.hidden = false;
     blankCanvas();
     //dataExport();
     //statsExport();
@@ -393,7 +396,7 @@ function builtOne(){
             }
         Cx = threeX;	Cy = threeY;	R = threeR;
     }
-    statsExport();
+    //statsExport();
 }
 function builtMany(){
     console.log("build many");
@@ -401,9 +404,13 @@ function builtMany(){
     let newCircle;
     let maxDotsCovered = 0, m = 0, dotsLeft = d.length, radiusEnough = (smallR > minDistGlob) ;
 
+    for (let j = 0; j < d.length; j++)
+        d[j].covered = false;
+    for (let j = 0; j < dist.length; j++)
+        dist[j].used = false;
+
     while(dotsLeft > 0){
         if (radiusEnough) {
-            console.log("a");
             for (let i = 0; i < dist.length; i++) {
                 if (!dist[i].used) {
                     newCircle = new Circle(dist[i]);
@@ -429,13 +436,12 @@ function builtMany(){
                 for (let j = 0; j < d.length; j++)
                     if ((Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001) {
                         d[j].covered = true;
-                        console.log(d[j]);
+                        d[j].coveredBy = newCircle;
                     }
                 maxDotsCovered = 0;
             } else
                 radiusEnough = false;
         } else {
-            console.log("b");
             for (let j = 0; j < d.length; j++)
                 if (!d[j].covered){
                     newCircle = new Circle();
@@ -443,16 +449,14 @@ function builtMany(){
                     newCircle.y = d[j].y;
                     newCircle.dotsCovered = 1;
                     circles.push(newCircle);
+                    d[j].covered = true;
+                    d[j].coveredBy = newCircle;
                 }
             break;
         }
     }
-
     for (let j = 0; j < d.length; j++)
-        d[j].covered = false;
-    for (let j = 0; j < dist.length; j++) {
-        dist[j].used = false;
-    }
+        console.log(d[j].covered + " " + d[j].coveredBy.x + " " + d[j].coveredBy.y);
     /*
     //by three dots
     let index = -1;
@@ -490,39 +494,51 @@ function builtMany(){
     }
 
      */
+    addStats.hidden = false;
+    expStats.hidden = false;
     statsExport();
 }
 function addDivStats() {
-    if (d !== [] && !statsShown) {
+    if (d !== [] && circles !== [] && !statsShown) {
+        addStats.hidden = false;
         statsShown = true;
+        console.log( "scsdcsdc" );
         for (let i = 0; i < d.length; i++) {
             let statsDiv = document.getElementById('stats');
             let div;
             div = document.createElement('div');
             div.style.border = "1px solid black";
+            div.style.color = "white";
             div.className = "stats";
-            div.innerText = "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y + ", входить в коло ( " + Cx + " ; " + Cy + " ) R = " + R;
+            div.innerText = "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
+                " ,\n входить в глобальне коло ( " + Cx + " ; " + Cy + " ) R = " + R +
+                " ,\n та локальне коло ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR;
             statsDiv.append(div);
         }
     }
 }
 function removeDivStats() {
-    if (statsShown) {
+    if (!addStats.hidden && statsShown) {
+        statsShown = false;
         let divs = document.getElementsByClassName('stats');
         for (let i = divs.length - 1; i >= 0; i--)
             divs[i].remove();
     }
 }
 function statsExport(){
-    expStats.hidden = false;
-    let filename = "Stats.txt";
-    let text = "";
-    for (let i = 0; i < d.length; i++)
-        text += "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y + ", входить в коло ( " + Cx + " ; " + Cy + " ) R = " + R + "\n";
-    let blob = new Blob([text], {type:'text/plain'});
-    expStats.download = filename;
-    expStats.innerHTML = "Записати статистику в файл";
-    expStats.href = window.URL.createObjectURL(blob);
+    if (d !== [] && circles !== []) {
+        expStats.hidden = false;
+        let filename = "Stats.txt";
+        let text = "";
+        for (let i = 0; i < d.length; i++)
+            text += "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
+                "\n\t глобальне коло ( " + Cx + " ; " + Cy + " ) R = " + R +
+                "\n\t локальне коло ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR + "\n\n";
+        let blob = new Blob([text], {type: 'text/plain'});
+        expStats.download = filename;
+        expStats.innerHTML = "Записати статистику в файл";
+        expStats.href = window.URL.createObjectURL(blob);
+    }
 }
 function able_disableFormsAddImage() {
     for(let i in inputImg)
