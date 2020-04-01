@@ -23,7 +23,8 @@ let scaleRate = 1, newScaleRate = 1;
 //algorithm variables
 let d = [], dist = [], circles = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
-let enoughOne, enoughMany; //is radius big enough to draw a circle
+let minDistGlob = 100000000, minDist;
+let enoughOne; //is radius big enough to draw a circle
 //let intersectionEachOthers = false;
 
 //image
@@ -170,6 +171,18 @@ function redraw() {
         CTX.beginPath();
         CTX.arc(Cx, Cy, 2, 0, Math.PI * 2, true);
         CTX.stroke();
+
+        for (let cIndex in circles){
+            CTX.strokeStyle = 'green';
+            CTX.beginPath();
+            CTX.arc(circles[cIndex].x, circles[cIndex].y, smallR, 0, Math.PI * 2, true);
+            CTX.stroke();
+
+            CTX.strokeStyle = 'black';
+            CTX.beginPath();
+            CTX.arc(circles[cIndex].x, circles[cIndex].y, 2, 0, Math.PI * 2, true);
+            CTX.stroke();
+        }
     }
 }
 function dataImport(input){
@@ -305,16 +318,19 @@ function clearAll() {
 }
 function built() {
     blankCanvas();
-    if (d.length !== 0) {
+    circles = [];
+    dist = [];
+    if (d.length >= 1) {
         if (form.builtOne.checked)
             builtOne();
+    }
+    if (d.length >= 2){
         if (form.builtMany.checked)
             builtMany();
     }
     redraw();
 }
 function builtOne(){
-    console.log("build one");
     //two dots
     //выбор двух опорных точок между которыми самое большое растояние, чтобы построить на них окружность
     //
@@ -323,11 +339,14 @@ function builtOne(){
     //dist = [ d.length*(d.length-1)/2 ];
     let newDist;
     dist = [];
+    minDistGlob = 100000000;
     for (let i = 0; i < d.length-1; i++)
         for (let j = i+1; j < d.length; j++) {
             lenX = Math.abs(d[i].x - d[j].x);
             lenY = Math.abs(d[i].y - d[j].y);
             newDist = new Dist( Math.sqrt(Math.pow(lenX, 2) + Math.pow(lenY,2)) , d[i], d[j]);
+            if (newDist.value < minDistGlob)
+                minDistGlob = newDist.value;
             dist.push(newDist);
             if (max < dist[k].value) {
                 max = dist[k].value;
@@ -378,24 +397,61 @@ function builtOne(){
 }
 function builtMany(){
     console.log("build many");
-    smallR = form.radius.value;
-    let xMid = 0, yMid = 0;
-    let maxDotsCovered = 0;
-    for (let i = 0; i < dist.length; i++){
-        enoughMany = true;
-        if (smallR >= dist[i].value ){
-            let newCircle = new Circle(dist[i]);
-            newCircle.x = (newCircle.diam.dot1.x + newCircle.diam.dot2.x)/2;
-            newCircle.y = (newCircle.diam.dot1.y + newCircle.diam.dot2.y)/2;
-            for (let j = 0; j < d.length; j++)
-                if ((Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) > Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
-                    newCircle.dotsCovered++;
+    smallR = +form.radius.value;
+    let newCircle;
+    let maxDotsCovered = 0, m = 0, dotsLeft = d.length, radiusEnough = (smallR > minDistGlob) ;
 
-            if (newCircle.dotsCovered > maxDotsCovered) {
-                maxDotsCovered = newCircle.dotsCovered;
-                circles.push( newCircle );
+    while(dotsLeft > 0){
+        if (radiusEnough) {
+            console.log("a");
+            for (let i = 0; i < dist.length; i++) {
+                if (!dist[i].used) {
+                    newCircle = new Circle(dist[i]);
+                    newCircle.x = (dist[i].dot1.x + dist[i].dot2.x) / 2;
+                    newCircle.y = (dist[i].dot1.y + dist[i].dot2.y) / 2;
+                    for (let j = 0; j < d.length; j++)
+                        if (!d[j].covered && (Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
+                            newCircle.dotsCovered++;
+
+                    if (newCircle.dotsCovered > maxDotsCovered) {
+                        m = i;
+                        maxDotsCovered = newCircle.dotsCovered;
+                    }
+                }
             }
+            if (maxDotsCovered > 1) {
+                newCircle = new Circle(dist[m]);
+                newCircle.x = (dist[m].dot1.x + dist[m].dot2.x) / 2;
+                newCircle.y = (dist[m].dot1.y + dist[m].dot2.y) / 2;
+                dist[m].used = true;
+                circles.push(newCircle);
+                dotsLeft -= maxDotsCovered;
+                for (let j = 0; j < d.length; j++)
+                    if ((Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001) {
+                        d[j].covered = true;
+                        console.log(d[j]);
+                    }
+                maxDotsCovered = 0;
+            } else
+                radiusEnough = false;
+        } else {
+            console.log("b");
+            for (let j = 0; j < d.length; j++)
+                if (!d[j].covered){
+                    newCircle = new Circle();
+                    newCircle.x = d[j].x;
+                    newCircle.y = d[j].y;
+                    newCircle.dotsCovered = 1;
+                    circles.push(newCircle);
+                }
+            break;
         }
+    }
+
+    for (let j = 0; j < d.length; j++)
+        d[j].covered = false;
+    for (let j = 0; j < dist.length; j++) {
+        dist[j].used = false;
     }
     /*
     //by three dots
@@ -434,9 +490,6 @@ function builtMany(){
     }
 
      */
-    //by two dots
-
-    //by one dot
     statsExport();
 }
 function addDivStats() {
