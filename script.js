@@ -1,28 +1,37 @@
+//html elements
 const CANVAS = document.getElementById('canvas');
 const CTX = CANVAS.getContext('2d');
-CTX.save();
+const aDownloadCoords = document.getElementById('downloadCoords');
+const expStats = document.getElementById('exportStats');
 const moveButton = document.getElementById('moveButton');
+const unButton = document.getElementById('undoButton');
 const inputByYourself = document.getElementById('inputByYourself');
 const inputImg = document.getElementsByClassName('lgURL');
 const inputMany = document.getElementsByClassName('many');
-let form = document.forms[0];
+const delImage = document.getElementById('deleteImage');
+const form = document.forms[0];
 
+
+let amountOfDotsAdded = [], dLengthBefore = [], counter = 0;
+let eventHappened = [];
 let statsShown = false;
+//drawing variables
 let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
 //let xTest = -100, yTest = -100;
 
-//alorightm variables
-let d = [];
+//algorithm variables
+let d = [], dist = [], circles = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
-let enough; //enough to draw circle
+let enoughOne, enoughMany; //is radius big enough to draw a circle
 //let intersectionEachOthers = false;
 
 //image
 let imageAdded = true;
-let imgPath = 'img/map.png';
+const imgPathDef = 'img/def.png';
+let imgPaths = [];
 let imgObj = new Image();
-imgObj.src = imgPath;
+imgObj.src = imgPathDef;
 
 let mouse = {
     xPm : 0,
@@ -49,8 +58,10 @@ CANVAS.onmousedown = (e) => {
         CTX.arc(mouse.xPd, mouse.yPd, 2, 0, Math.PI*2, true);
         CTX.stroke();
         dataExport();
+        unButton.disabled = false;
+        eventHappened.push("dotAdded");
     }
-    console.log(mouse.xPm + " " + mouse.yPm);
+    //console.log(mouse.xPm + " " + mouse.yPm);
 };
 CANVAS.onmousemove = (e) => {
     if (mouse.down && moveButton.style.backgroundColor === "lightblue") {
@@ -92,38 +103,23 @@ class Dot{
             this.x = 0;
             this.y = 0;
         }
+        this.covered = false;
     }
 }
-function addImage(input, local_global) {
-    //ToDo MIME-типа
-    if (local_global) {
-        try{
-            let file = input.files[0];
-            let reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function() {
-                if (typeof(reader.result) === "string")
-                    imgObj.src = reader.result;
-            };
-            reader.onerror = function() {
-                alert(reader.error);
-            };
-            imageAdded = true;
-        } catch (e) {
-            console.log( e );
-        }
-    } else if (local_global === undefined) {
-        imgObj.src = 'img/def.png';
-        blankCanvas();
-        redraw();
-        imageAdded = false;
-    } else {
-        try {
-            imgObj.src = form.imageUrl.value;
-            imageAdded = true;
-        } catch (e) {
-            console.log( e );
-        }
+class Dist {
+    constructor(_v, _d1, _d2) {
+        this.value = _v;
+        this.dot1 = _d1;
+        this.dot2 = _d2;
+        this.used = false;
+    }
+}
+class Circle {
+    constructor(_dist) {
+        this.x = 0;
+        this.y = 0;
+        this.dotsCovered = 0;
+        this.diam = _dist;
     }
 }
 function blankCanvas(){
@@ -157,67 +153,155 @@ function redraw() {
     if (imageAdded)
         CTX.drawImage(imgObj, 0, 0);
 
-    if (d !== [])
-        for (let dIndex in d){
+    if (d !== []) {
+        for (let dIndex in d) {
             CTX.strokeStyle = 'red';
             CTX.beginPath();
-            CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI*2, true);
+            CTX.arc(d[dIndex].x, d[dIndex].y, 2, 0, Math.PI * 2, true);
             CTX.stroke();
         }
 
-    CTX.strokeStyle = 'blue';
-    CTX.beginPath();
-    CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
-    CTX.stroke();
+        CTX.strokeStyle = 'blue';
+        CTX.beginPath();
+        CTX.arc(Cx, Cy, R, 0, Math.PI * 2, true);
+        CTX.stroke();
 
-    CTX.strokeStyle = 'darkgoldenrod';
-    CTX.beginPath();
-    CTX.arc(Cx, Cy, 2, 0, Math.PI*2, true);
-    CTX.stroke();
+        CTX.strokeStyle = 'darkgoldenrod';
+        CTX.beginPath();
+        CTX.arc(Cx, Cy, 2, 0, Math.PI * 2, true);
+        CTX.stroke();
+    }
 }
 function dataImport(input){
     let file = input.files[0];
     let reader = new FileReader();
     reader.readAsText(file);
+    dLengthBefore.push(d.length);
+    counter = 0;
     reader.onload = function() {
         let arrayStrs = reader.result.split("\n");
-        for (let key in arrayStrs)
+        for (let key in arrayStrs) {
             if (arrayStrs[key] !== "") {
                 let coords = arrayStrs[key].split(" ");
-                if (coords.length === 2 && typeof(+coords[0]) === "number" && typeof(+coords[1]) === "number") {
+                if (coords.length === 2 && typeof (+coords[0]) === "number" && typeof (+coords[1]) === "number") {
                     let newDot = new Dot(+coords[0], +coords[1]);
                     d.push(newDot);
-                    dataExport();
+                    counter++;
                 } else {
                     alert("Incorrect data!");
                     break;
                 }
             }
+        }
+    };
+    reader.onloadend = () => {
+        amountOfDotsAdded.push(counter);
+        eventHappened.push("dotsAdded");
+        unButton.disabled = false;
+        blankCanvas();
+        redraw();
+        dataExport();
     };
     reader.onerror = function() {
         alert(reader.error);
     };
 }
 function dataExport(){
+    aDownloadCoords.hidden = false;
     let filename = "OutputCoordinates.txt";
     let text = "";
 
     for (let i = 0; i < d.length; i++)
         text += d[i].x + " " + d[i].y + "\n";
     let blob = new Blob([text], {type:'text/plain'});
-    let A = document.getElementById('downloadCoords');
-    A.download = filename;
-    A.innerHTML = "Зберегти файл з координатами";
-    A.href = window.URL.createObjectURL(blob);
+
+    aDownloadCoords.download = filename;
+    aDownloadCoords.innerHTML = "Зберегти файл з координатами";
+    aDownloadCoords.href = window.URL.createObjectURL(blob);
+}
+function addImage(input, local_global) {
+    //ToDo MIME-типа
+    if (local_global) {
+        try{
+            let file = input.files[0];
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function() {
+                if (typeof(reader.result) === "string") {
+                    imgObj.src = reader.result;
+                    imgPaths.push( imgObj.src );
+                    imageAdded = true;
+                    delImage.disabled = false;
+                    unButton.disabled = false;
+                    eventHappened.push("imageAdded");
+                }
+            };
+            reader.onloadend = () => {
+                blankCanvas();
+                redraw();
+            };
+            reader.onerror = function() {
+                alert(reader.error);
+            };
+        } catch (e) {
+            console.log( e );
+        }
+    } else if (local_global === undefined) {
+        imgObj.src = imgPathDef;
+        imgPaths.push( imgObj.src );
+        imageAdded = false;
+        delImage.disabled = true;
+        unButton.disabled = false;
+        eventHappened.push("imageAdded");
+        blankCanvas();
+        redraw();
+    } else {
+        imgObj.src = form.imageUrl.value;
+        imgPaths.push( imgObj.src );
+        imageAdded = true;
+        delImage.disabled = false;
+        unButton.disabled = false;
+        eventHappened.push("imageAdded");
+        blankCanvas();
+        redraw();
+    }
+}
+function undo() {
+    if (eventHappened.length > 0)
+        if (eventHappened[eventHappened.length-1] === "dotAdded"){
+            d.splice(d.length-1, 1);
+            eventHappened.remove("dotAdded");
+            blankCanvas();
+            redraw();
+        } else if (eventHappened[eventHappened.length-1] === "dotsAdded") {
+            //console.log(d.length + "\n" + dLengthBefore.length + "\n" + amountOfDotsAdded.length);
+            d.splice(dLengthBefore[dLengthBefore.length-1], amountOfDotsAdded[amountOfDotsAdded.length-1]);
+            dLengthBefore.splice(dLengthBefore.length-1,1);
+            amountOfDotsAdded.splice(amountOfDotsAdded.length-1,1);
+            eventHappened.remove("dotsAdded");
+            blankCanvas();
+            redraw();
+        } else if (eventHappened[eventHappened.length-1] === "imageAdded"){
+            imgPaths.remove( imgObj.src );
+            console.log( imgPaths + "\n" + imgPaths.length);
+            imgObj.src = imgPaths[imgPaths.length-1];
+            eventHappened.remove("imageAdded");
+            blankCanvas();
+            redraw();
+        }
 }
 function clearAll() {
     d = [];
     Cx = Cy = R = xTranslateTo = yTranslateTo = 0;
     newScaleRate = 1;
     imageAdded = false;
+    aDownloadCoords.hidden = true;
+    expStats.hidden = true;
+    unButton.disabled = true;
+    imgObj.src = imgPathDef;
     blankCanvas();
-    dataExport();
-    statsExport();
+    //dataExport();
+    //statsExport();
 }
 function built() {
     blankCanvas();
@@ -235,36 +319,35 @@ function builtOne(){
     //выбор двух опорных точок между которыми самое большое растояние, чтобы построить на них окружность
     //
     let k = 0, m = 0, n = 0;
-    let max = 0, dist = [ d.length*(d.length-1)/2 ];
-
+    let max = 0;
+    //dist = [ d.length*(d.length-1)/2 ];
+    let newDist;
+    dist = [];
     for (let i = 0; i < d.length-1; i++)
         for (let j = i+1; j < d.length; j++) {
             lenX = Math.abs(d[i].x - d[j].x);
             lenY = Math.abs(d[i].y - d[j].y);
-            dist[k] = Math.sqrt(Math.pow(lenX, 2) + Math.pow(lenY,2));
-            if(max < dist[k]) {
-                max = dist[k];	m = i;	n = j;
+            newDist = new Dist( Math.sqrt(Math.pow(lenX, 2) + Math.pow(lenY,2)) , d[i], d[j]);
+            dist.push(newDist);
+            if (max < dist[k].value) {
+                max = dist[k].value;
+                m = i;
+                n = j;
             }
             k++;
         }
     tempX = (d[m].x + d[n].x)/2;
     tempY = (d[m].y + d[n].y)/2;
     tempR = Math.sqrt(Math.pow(d[m].x - tempX, 2) + Math.pow(d[m].y - tempY, 2));
-    enough = true;
+    enoughOne = true;
     //проверка все ли точки входят в этот круг
     for (let i = 0; i < d.length; i++)
         if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001)
-        //if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > tempR*tempR)
-            enough = false;
+            enoughOne = false;
     Cx = tempX; Cy = tempY; R = tempR;
-/*
-    CTX.strokeStyle = 'green';
-    CTX.beginPath();
-    CTX.arc(Cx, Cy, R, 0, Math.PI*2, true);
-    CTX.stroke();
-*/
+
     //three dots
-    if (!enough) {
+    if (!enoughOne) {
         let threeR = max, threeX = 0, threeY = 0;
         for (let l = 0; l < d.length; l++)
             if (l !== n && l !== m) {
@@ -278,12 +361,12 @@ function builtOne(){
                     (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
                 R = Math.sqrt(Math.pow(d[n].x - Cx, 2) + Math.pow(d[n].y - Cy, 2));
 
-                enough = true;
+                enoughOne = true;
                 for (let iter = 0; iter < d.length; iter++)
                     if ((Math.pow(d[iter].x - Cx, 2) + Math.pow(d[iter].y - Cy, 2)) > R * R + 0.0001)
-                        enough = false;
+                        enoughOne = false;
 
-                if (enough && R < threeR) {
+                if (enoughOne && R < threeR) {
                     threeX = Cx;
                     threeY = Cy;
                     threeR = R;
@@ -295,6 +378,26 @@ function builtOne(){
 }
 function builtMany(){
     console.log("build many");
+    smallR = form.radius.value;
+    let xMid = 0, yMid = 0;
+    let maxDotsCovered = 0;
+    for (let i = 0; i < dist.length; i++){
+        enoughMany = true;
+        if (smallR >= dist[i].value ){
+            let newCircle = new Circle(dist[i]);
+            newCircle.x = (newCircle.diam.dot1.x + newCircle.diam.dot2.x)/2;
+            newCircle.y = (newCircle.diam.dot1.y + newCircle.diam.dot2.y)/2;
+            for (let j = 0; j < d.length; j++)
+                if ((Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) > Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
+                    newCircle.dotsCovered++;
+
+            if (newCircle.dotsCovered > maxDotsCovered) {
+                maxDotsCovered = newCircle.dotsCovered;
+                circles.push( newCircle );
+            }
+        }
+    }
+    /*
     //by three dots
     let index = -1;
     while( dotsToCover.size() > 2 ) {
@@ -329,6 +432,8 @@ function builtMany(){
             }
         }
     }
+
+     */
     //by two dots
 
     //by one dot
@@ -356,15 +461,15 @@ function removeDivStats() {
     }
 }
 function statsExport(){
+    expStats.hidden = false;
     let filename = "Stats.txt";
     let text = "";
     for (let i = 0; i < d.length; i++)
         text += "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y + ", входить в коло ( " + Cx + " ; " + Cy + " ) R = " + R + "\n";
     let blob = new Blob([text], {type:'text/plain'});
-    let A = document.getElementById('exportStats');
-    A.download = filename;
-    A.innerHTML = "Записати статистику в файл";
-    A.href = window.URL.createObjectURL(blob);
+    expStats.download = filename;
+    expStats.innerHTML = "Записати статистику в файл";
+    expStats.href = window.URL.createObjectURL(blob);
 }
 function able_disableFormsAddImage() {
     for(let i in inputImg)
@@ -374,6 +479,15 @@ function able_disableFormsMany() {
     for(let i in inputMany)
         inputMany[i].disabled = !inputMany[i].disabled;
 }
+
+Array.prototype.remove = function(value) {
+    let idx = this.indexOf(value);
+    if (idx !== -1) {
+        // Второй параметр - число элементов, которые необходимо удалить
+        return this.splice(idx, 1);
+    }
+    return false;
+};
 
 /*
 менее еффективный способ перебора всех возможных кругов построенных по трём точкам

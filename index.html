@@ -33,11 +33,12 @@
                     Зчитати координати з файлу
                     <input type="file" onchange="dataImport(this)">
                     <br>
-                    <a id="downloadCoords">Зберегти файл з координатами</a>
+                    <a id="downloadCoords" hidden>Зберегти файл з координатами</a>
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
-                    <br>
 
+
+                    <hr>
                     Додати зображення
                     <br>
                     <label>
@@ -47,13 +48,14 @@
                     <br>
                     <label>
                         <input type="radio" name="lgURL" value="gURL" onchange="able_disableFormsAddImage(); return false;" >
-                    </label> URL адреса
+                    </label> URL <адреса>                                                                                                                                                                                                                                                                           </адреса>
                     <label for="UrlSrc"></label>
-                    <input class="lgURL" type="text" id="UrlSrc" name="imageUrl" placeholder="Введіть посилання" onchange="addImage(this, false); return false;" disabled>
+                    <input id="UrlSrc" class="lgURL" type="text" name="imageUrl" placeholder="Введіть посилання" onchange="addImage(this, false); return false;" disabled>
+                    <hr>
+                    <button id="deleteImage" onclick="addImage(); return false;" disabled>Видалити зображення</button>
                     <br>
-                    <button id="deleteImage" onclick="addImage(); return false;" >Видалити зображення</button>
+                    <button id="undoButton" onclick="undo();return false;" disabled>Відмінити</button>
                     <br>
-
                     <button id="clearAllButton" onclick="clearAll();return false;" style="background-color:#ff5555">Очистити все</button>
                     <hr>
 
@@ -73,7 +75,7 @@
                             <input class="many" type="radio" name="withoutIntersections" value="withoutInter" disabled>
                         </label> Без перетина
                         <br>
-                        <label for="radius"></label><input class="many" type="text" name="name" id="radius" value="" placeholder="Введіть радіус" disabled>
+                        <label for="radius"></label><input id="radius" class="many" type="text" name="radius" placeholder="Введіть радіус" disabled>
                     </div>
                     <hr>
 
@@ -88,7 +90,7 @@
                     <input type="button" name="addStats" value="Вивести статистику" onclick="addDivStats()">
                     <input type="button" name="removeStats" value="Приховати статисику" onclick="removeDivStats()">
                     <br>
-                    <a id="exportStats">Записати статистику в файл</a>
+                    <a id="exportStats" hidden>Записати статистику в файл</a>
                 </form>
 
 
