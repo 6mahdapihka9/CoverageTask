@@ -23,7 +23,7 @@ let scaleRate = 1, newScaleRate = 1;
 
 //algorithm variables
 let d = [], dist = [], circles = [];
-let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 1;
+let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 100;
 let minDistGlob = 100000000;
 let enoughOne; //is radius big enough to draw a circle
 //let intersectionEachOthers = false;

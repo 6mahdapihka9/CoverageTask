@@ -30,13 +30,14 @@
                     </label> Використовувати GoogleMaps
                     <hr>
 
+                    <div title="текст файлу повинен мати вигляд:X Y новий рядок X Y новий рядок...">
                     Зчитати координати з файлу
                     <input type="file" onchange="dataImport(this)">
                     <br>
                     <a id="downloadCoords" hidden>Зберегти файл з координатами</a>
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
-
+                    </div>
 
                     <hr>
                     Додати зображення
@@ -78,7 +79,7 @@
                     </div>
                     -->
                     <br>
-                    <label for="radius"></label><input id="radius" class="many" type="text" name="radius" placeholder="Введіть радіус">
+                    <label for="radius"></label><input id="radius" class="many" type="text" value="100" name="radius" placeholder="Введіть радіус">
                     <hr>
 
                     <button id="builtButton" onclick="built();return false;" style="background-color:springgreen;">Побудувати</button>
@@ -99,15 +100,18 @@
             </div>
         </main>
         <footer>
+            <a href="https://steamcommunity.com/id/zul_jin_/">&copy;Kulesh Oleksandr x Zul'Jin x S A C R I F I C E x Baal</a>
             <address>
                 <div>
                     <p>Contact info:</p>
                     <p>Tel: +38(050)152-43-65</p>
                     <p>Address: м. Чернівці вул. Небесної Сотні 4б</p>
-                    <p>email: shnyger@gmail.com</p>
+                    <p>email: kulesh.oleksandr@chnu.edu.ua</p>
+                    <p>Telegram: @zul_jin</p>
+                    <p>Supervisor:</p>
+                    <p>Руснак Миколай Андрыйович</p>
                 </div>
             </address>
-            <a href="#">&copy; Zul'Jin x Sacrifice x Baal x Aleksandr Kulesh</a>
         </footer>
     </body>
     <script src="script.js" language="JavaScript"></script>
