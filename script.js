@@ -19,7 +19,6 @@ let statsShown = false;
 //drawing variables
 let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
-//let xTest = -100, yTest = -100;
 
 //algorithm variables
 let d = [], dist = [], circles = [];
@@ -63,7 +62,6 @@ CANVAS.onmousedown = (e) => {
         unButton.disabled = false;
         eventHappened.push("dotAdded");
     }
-    //console.log(mouse.xPm + " " + mouse.yPm);
 };
 CANVAS.onmousemove = (e) => {
     if (mouse.down && moveButton.style.backgroundColor === "lightblue") {
@@ -167,7 +165,7 @@ function redraw() {
         CTX.beginPath();
         CTX.arc(Cx, Cy, R, 0, Math.PI * 2, true);
         CTX.stroke();
-
+        console.log("draw "+Cx + " " + Cy);
         CTX.strokeStyle = 'darkgoldenrod';
         CTX.beginPath();
         CTX.arc(Cx, Cy, 2, 0, Math.PI * 2, true);
@@ -337,9 +335,9 @@ function builtOne(){
     //two dots
     //выбор двух опорных точок между которыми самое большое растояние, чтобы построить на них окружность
     //
+    console.log("b one start "+Cx + " " + Cy);
     let k = 0, m = 0, n = 0;
     let max = 0;
-    //dist = [ d.length*(d.length-1)/2 ];
     let newDist;
     dist = [];
     minDistGlob = 100000000;
@@ -364,42 +362,45 @@ function builtOne(){
     enoughOne = true;
     //проверка все ли точки входят в этот круг
     for (let i = 0; i < d.length; i++)
-        if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001)
+        if ((Math.pow(d[i].x-tempX, 2) + Math.pow(d[i].y-tempY, 2)) > Math.round(tempR*tempR * 100000000.0)/100000000.0 + 0.0001) {
             enoughOne = false;
+            break;
+        }
     Cx = tempX; Cy = tempY; R = tempR;
 
     //three dots
     if (!enoughOne) {
         let threeR = max, threeX = 0, threeY = 0;
-        for (let l = 0; l < d.length; l++)
-            if (l !== n && l !== m) {
-                Cx = -(d[n].y * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
-                    d[m].y * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
-                    d[l].y * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
-                    (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
-                Cy = (d[n].x * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
-                    d[m].x * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
-                    d[l].x * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
-                    (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
-                R = Math.sqrt(Math.pow(d[n].x - Cx, 2) + Math.pow(d[n].y - Cy, 2));
+        for (let n = 0; n < d.length-2; n++)
+            for (let m = n+1; m < d.length-1; m++)
+                for (let l = m+1; l < d.length; l++) {
+                        Cx = -(d[n].y * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
+                            d[m].y * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
+                            d[l].y * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
+                            (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
+                        Cy = (d[n].x * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) +
+                            d[m].x * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) +
+                            d[l].x * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) /
+                            (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
+                        R = Math.sqrt(Math.pow(d[n].x - Cx, 2) + Math.pow(d[n].y - Cy, 2));
 
-                enoughOne = true;
-                for (let iter = 0; iter < d.length; iter++)
-                    if ((Math.pow(d[iter].x - Cx, 2) + Math.pow(d[iter].y - Cy, 2)) > R * R + 0.0001)
-                        enoughOne = false;
+                        enoughOne = true;
+                        for (let iter = 0; iter < d.length; iter++)
+                            if ((Math.pow(d[iter].x - Cx, 2) + Math.pow(d[iter].y - Cy, 2)) > Math.round(R * R * 100000000.0)/100000000.0 + 0.0001) {
+                                enoughOne = false;break;
+                            }
 
-                if (enoughOne && R < threeR) {
-                    threeX = Cx;
-                    threeY = Cy;
-                    threeR = R;
-                }
-            }
+                        if (enoughOne && R < threeR) {
+                            threeX = Cx;
+                            threeY = Cy;
+                            threeR = R;
+                        }
+                    }
         Cx = threeX;	Cy = threeY;	R = threeR;
     }
-    //statsExport();
+
 }
 function builtMany(){
-    console.log("build many");
     smallR = +form.radius.value;
     let newCircle;
     let maxDotsCovered = 0, m = 0, dotsLeft = d.length, radiusEnough = (smallR > minDistGlob) ;
@@ -455,45 +456,6 @@ function builtMany(){
             break;
         }
     }
-    for (let j = 0; j < d.length; j++)
-        console.log(d[j].covered + " " + d[j].coveredBy.x + " " + d[j].coveredBy.y);
-    /*
-    //by three dots
-    let index = -1;
-    while( dotsToCover.size() > 2 ) {
-        all: for (let i = 0; i < dC.size()-2; i++)
-        for (let j = i+1; j < dC.size()-1; j++) {
-            for (let l = j+1; l < dC.size(); l++) {
-                tempX = -(dC.get(i).y*(dC.get(j).x*dC.get(j).x + dC.get(j).y*dC.get(j).y - dC.get(l).x*dC.get(l).x - dC.get(l).y*dC.get(l).y) +
-                    dC.get(j).y*(dC.get(l).x*dC.get(l).x + dC.get(l).y*dC.get(l).y - dC.get(i).x*dC.get(i).x - dC.get(i).y*dC.get(i).y) +
-                    dC.get(l).y*(dC.get(i).x*dC.get(i).x + dC.get(i).y*dC.get(i).y - dC.get(j).x*dC.get(j).x - dC.get(j).y*dC.get(j).y))/
-                    (2*(dC.get(i).x*(dC.get(j).y-dC.get(l).y) + dC.get(j).x*(dC.get(l).y - dC.get(i).y) + dC.get(l).x*(dC.get(i).y - dC.get(j).y)));
-                tempY = (dC.get(i).x*(dC.get(j).x*dC.get(j).x + dC.get(j).y*dC.get(j).y - dC.get(l).x*dC.get(l).x - dC.get(l).y*dC.get(l).y) +
-                    dC.get(j).x*(dC.get(l).x*dC.get(l).x + dC.get(l).y*dC.get(l).y - dC.get(i).x*dC.get(i).x - dC.get(i).y*dC.get(i).y) +
-                    dC.get(l).x*(dC.get(i).x*dC.get(i).x + dC.get(i).y*dC.get(i).y - dC.get(j).x*dC.get(j).x - dC.get(j).y*dC.get(j).y))/
-                    (2*(dC.get(i).x*(dC.get(j).y-dC.get(l).y) + dC.get(j).x*(dC.get(l).y - dC.get(i).y) + dC.get(l).x*(dC.get(i).y - dC.get(j).y)));
-
-                enough = true;
-                if ((Math.pow(dC.get(i).x-tempX, 2) + Math.pow(dC.get(i).y-tempY, 2)) > smallR*smallR |
-                    (Math.pow(dC.get(j).x-tempX, 2) + Math.pow(dC.get(j).y-tempY, 2)) > smallR*smallR |
-                    (Math.pow(dC.get(l).x-tempX, 2) + Math.pow(dC.get(l).y-tempY, 2)) > smallR*smallR)
-                    enough = false;
-
-                if (enough) {
-                    index++;
-                    SCs.add( new SmallCircle(smallR) );
-                    SCs.get(index).x = tempX;
-                    SCs.get(index).y = tempY;
-                    dC.remove(l);
-                    dC.remove(j);
-                    dC.remove(i);
-                    break all;
-                }
-            }
-        }
-    }
-
-     */
     addStats.hidden = false;
     expStats.hidden = false;
     statsExport();
@@ -502,7 +464,6 @@ function addDivStats() {
     if (d !== [] && circles !== [] && !statsShown) {
         addStats.hidden = false;
         statsShown = true;
-        console.log( "scsdcsdc" );
         for (let i = 0; i < d.length; i++) {
             let statsDiv = document.getElementById('stats');
             let div;
@@ -557,31 +518,3 @@ Array.prototype.remove = function(value) {
     }
     return false;
 };
-
-/*
-менее еффективный способ перебора всех возможных кругов построенных по трём точкам
-for (let i = 0; i < d.length-2; i++)
-    for (let j = i+1; j < d.length-1; j++) {
-        for (let l = j+1; l < d.length; l++) {
-            Cx = -(d[i].y*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
-                d[j].y*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
-                d[l].y*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
-                (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
-            Cy = (d[i].x*(d[j].x*d[j].x + d[j].y*d[j].y - d[l].x*d[l].x - d[l].y*d[l].y) +
-                d[j].x*(d[l].x*d[l].x + d[l].y*d[l].y - d[i].x*d[i].x - d[i].y*d[i].y) +
-                d[l].x*(d[i].x*d[i].x + d[i].y*d[i].y - d[j].x*d[j].x - d[j].y*d[j].y))/
-                (2*(d[i].x*(d[j].y-d[l].y) + d[j].x*(d[l].y - d[i].y) + d[l].x*(d[i].y - d[j].y)));
-            R = Math.sqrt( Math.pow(d[i].x - Cx, 2) + Math.pow(d[i].y - Cy, 2));
-
-            enough = true;
-            for (let iter = 0; iter < d.length; iter++)
-            //if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > Math.round(R*R * 100000000.0)/100000000.0)
-            if ((Math.pow(d[iter].x-Cx, 2) + Math.pow(d[iter].y-Cy, 2)) > R*R + 0.0001)
-                enough = false;
-            console.log("("+d[i].x+";"+d[i].y+") ("+d[j].x+";"+d[j].y+") ("+d[l].x+";"+d[l].y+") " + R + " " + enough);
-            if (enough && R < threeR) {
-                threeX = Cx;	threeY = Cy;	threeR = R;
-            }
-        }
-    }
-*/
