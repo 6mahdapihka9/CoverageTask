@@ -3,15 +3,15 @@ const CANVAS = document.getElementById('canvas');
 const CTX = CANVAS.getContext('2d');
 const aDownloadCoords = document.getElementById('downloadCoords');
 const expStats = document.getElementById('exportStats');
-const addStats = document.getElementById('addStats');
 const moveButton = document.getElementById('moveButton');
 const unButton = document.getElementById('undoButton');
 const inputByYourself = document.getElementById('inputByYourself');
 const inputImg = document.getElementsByClassName('lgURL');
 const inputMany = document.getElementsByClassName('many');
 const delImage = document.getElementById('deleteImage');
+const helpDiv = document.getElementById('help');
+const statsDiv = document.getElementById('stat');
 const form = document.forms[0];
-
 
 let amountOfDotsAdded = [], dLengthBefore = [], counter = 0;
 let eventHappened = [];
@@ -28,7 +28,6 @@ let enoughOne; //is radius big enough to draw a circle
 //let intersectionEachOthers = false;
 
 //image
-let imageAdded = true;
 const imgPathDef = 'img/def.png';
 let imgPaths = [];
 let imgObj = new Image();
@@ -150,8 +149,7 @@ function zoom(in_out) {
     redraw();
 }
 function redraw() {
-    if (imageAdded)
-        CTX.drawImage(imgObj, 0, 0);
+    CTX.drawImage(imgObj, 0, 0);
 
     if (d !== []) {
         for (let dIndex in d) {
@@ -165,7 +163,7 @@ function redraw() {
         CTX.beginPath();
         CTX.arc(Cx, Cy, R, 0, Math.PI * 2, true);
         CTX.stroke();
-        console.log("draw "+Cx + " " + Cy);
+
         CTX.strokeStyle = 'darkgoldenrod';
         CTX.beginPath();
         CTX.arc(Cx, Cy, 2, 0, Math.PI * 2, true);
@@ -242,7 +240,6 @@ function addImage(input, local_global) {
                 if (typeof(reader.result) === "string") {
                     imgObj.src = reader.result;
                     imgPaths.push( imgObj.src );
-                    imageAdded = true;
                     delImage.disabled = false;
                     unButton.disabled = false;
                     eventHappened.push("imageAdded");
@@ -261,7 +258,6 @@ function addImage(input, local_global) {
     } else if (local_global === undefined) {
         imgObj.src = imgPathDef;
         imgPaths.push( imgObj.src );
-        imageAdded = false;
         delImage.disabled = true;
         unButton.disabled = false;
         eventHappened.push("imageAdded");
@@ -270,7 +266,6 @@ function addImage(input, local_global) {
     } else {
         imgObj.src = form.imageUrl.value;
         imgPaths.push( imgObj.src );
-        imageAdded = true;
         delImage.disabled = false;
         unButton.disabled = false;
         eventHappened.push("imageAdded");
@@ -283,20 +278,25 @@ function undo() {
         if (eventHappened[eventHappened.length-1] === "dotAdded"){
             d.splice(d.length-1, 1);
             eventHappened.remove("dotAdded");
+            Cx = 0; Cy = 0; R = 0;
             blankCanvas();
             redraw();
+            statsDiv.hidden = true;
         } else if (eventHappened[eventHappened.length-1] === "dotsAdded") {
-            //console.log(d.length + "\n" + dLengthBefore.length + "\n" + amountOfDotsAdded.length);
             d.splice(dLengthBefore[dLengthBefore.length-1], amountOfDotsAdded[amountOfDotsAdded.length-1]);
             dLengthBefore.splice(dLengthBefore.length-1,1);
             amountOfDotsAdded.splice(amountOfDotsAdded.length-1,1);
             eventHappened.remove("dotsAdded");
+            Cx = 0; Cy = 0; R = 0;
             blankCanvas();
             redraw();
+            statsDiv.hidden = true;
         } else if (eventHappened[eventHappened.length-1] === "imageAdded"){
-            imgPaths.remove( imgObj.src );
-            console.log( imgPaths + "\n" + imgPaths.length);
-            imgObj.src = imgPaths[imgPaths.length-1];
+            if (imgPaths.length > 1) {
+                imgPaths.remove(imgObj.src);
+                imgObj.src = imgPaths[imgPaths.length - 1];
+            } else
+                imgObj.src = imgPathDef;
             eventHappened.remove("imageAdded");
             blankCanvas();
             redraw();
@@ -306,16 +306,11 @@ function clearAll() {
     d = [];
     Cx = Cy = R = xTranslateTo = yTranslateTo = 0;
     newScaleRate = 1;
-    imageAdded = false;
     aDownloadCoords.hidden = true;
-    expStats.hidden = true;
-    addStats.hidden = true;
+    statsDiv.hidden = true;
     unButton.disabled = true;
     imgObj.src = imgPathDef;
-    expStats.hidden = false;
     blankCanvas();
-    //dataExport();
-    //statsExport();
 }
 function built() {
     blankCanvas();
@@ -330,12 +325,12 @@ function built() {
             builtMany();
     }
     redraw();
+    statsDiv.hidden = false;
+    removeDivStats();
 }
 function builtOne(){
     //two dots
     //выбор двух опорных точок между которыми самое большое растояние, чтобы построить на них окружность
-    //
-    console.log("b one start "+Cx + " " + Cy);
     let k = 0, m = 0, n = 0;
     let max = 0;
     let newDist;
@@ -456,13 +451,10 @@ function builtMany(){
             break;
         }
     }
-    addStats.hidden = false;
-    expStats.hidden = false;
     statsExport();
 }
 function addDivStats() {
-    if (d !== [] && circles !== [] && !statsShown) {
-        addStats.hidden = false;
+    if (!statsShown) {
         statsShown = true;
         for (let i = 0; i < d.length; i++) {
             let statsDiv = document.getElementById('stats');
@@ -471,15 +463,15 @@ function addDivStats() {
             div.style.border = "1px solid black";
             div.style.color = "white";
             div.className = "stats";
-            div.innerText = "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
-                " ,\n входить в глобальне коло ( " + Cx + " ; " + Cy + " ) R = " + R +
-                " ,\n та локальне коло ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR;
+            div.innerText = "Т. №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
+                ",\n глобал. ( " + Math.round(Cx * 100.0)/100.0 + " ; " + Math.round(Cy * 100.0)/100.0 + " ) R = " + Math.round(R * 100.0)/100.0 +
+                ",\n локал.  ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR;
             statsDiv.append(div);
         }
     }
 }
 function removeDivStats() {
-    if (!addStats.hidden && statsShown) {
+    if (statsShown) {
         statsShown = false;
         let divs = document.getElementsByClassName('stats');
         for (let i = divs.length - 1; i >= 0; i--)
@@ -488,13 +480,12 @@ function removeDivStats() {
 }
 function statsExport(){
     if (d !== [] && circles !== []) {
-        expStats.hidden = false;
         let filename = "Stats.txt";
         let text = "";
         for (let i = 0; i < d.length; i++)
-            text += "Точка №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
-                "\n\t глобальне коло ( " + Cx + " ; " + Cy + " ) R = " + R +
-                "\n\t локальне коло ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR + "\n\n";
+            text += "Т. №" + (i + 1) + ": x = " + d[i].x + ", y = " + d[i].y +
+                "\n\t глобал ( " + Math.round(Cx * 100.0)/100.0 + " ; " + Math.round(Cy * 100.0)/100.0 + " ) R = " + Math.round(R * 100.0)/100.0 +
+                "\n\t локал  ( " + d[i].coveredBy.x + " ; " + d[i].coveredBy.y + " ) R = " + smallR + "\n\n";
         let blob = new Blob([text], {type: 'text/plain'});
         expStats.download = filename;
         expStats.innerHTML = "Записати статистику в файл";
@@ -508,6 +499,9 @@ function able_disableFormsAddImage() {
 function able_disableFormsMany() {
     for(let i in inputMany)
         inputMany[i].disabled = !inputMany[i].disabled;
+}
+function showHideHelp(){
+    helpDiv.hidden = !helpDiv.hidden;
 }
 
 Array.prototype.remove = function(value) {
