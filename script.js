@@ -11,11 +11,14 @@ const inputMany = document.getElementsByClassName('many');
 const delImage = document.getElementById('deleteImage');
 const helpDiv = document.getElementById('help');
 const statsDiv = document.getElementById('stat');
+const pX = document.getElementById('pX');
+const pY = document.getElementById('pY');
 const form = document.forms[0];
 
 let amountOfDotsAdded = [], dLengthBefore = [], counter = 0;
 let eventHappened = [];
 let statsShown = false;
+
 //drawing variables
 let xTranslated = 0, yTranslated = 0, xTranslateTo = 0, yTranslateTo = 0;
 let scaleRate = 1, newScaleRate = 1;
@@ -25,7 +28,6 @@ let d = [], dist = [], circles = [];
 let Cx, Cy, R,    tempX, tempY, tempR,    lenX, lenY,    smallR = 100;
 let minDistGlob = 100000000;
 let enoughOne; //is radius big enough to draw a circle
-//let intersectionEachOthers = false;
 
 //image
 const imgPathDef = 'img/def.png';
@@ -63,6 +65,8 @@ CANVAS.onmousedown = (e) => {
     }
 };
 CANVAS.onmousemove = (e) => {
+    pX.textContent = "x: " + (e.offsetX - xTranslated) / scaleRate;
+    pY.textContent = "y: " + (e.offsetY - yTranslated) / scaleRate;
     if (mouse.down && moveButton.style.backgroundColor === "lightblue") {
         mouse.xNow = e.offsetX;
         mouse.yNow = e.offsetY;
@@ -111,13 +115,12 @@ class Dist {
         this.value = _v;
         this.dot1 = _d1;
         this.dot2 = _d2;
-        this.used = false;
     }
 }
 class Circle {
-    constructor(_dist) {
-        this.x = 0;
-        this.y = 0;
+    constructor(_x, _y) {
+        this.x = _x;
+        this.y = _y;
         this.dotsCovered = 0;
     }
 }
@@ -398,43 +401,56 @@ function builtOne(){
 function builtMany(){
     smallR = +form.radius.value;
     let newCircle;
-    let maxDotsCovered = 0, m = 0, dotsLeft = d.length, radiusEnough = (smallR > minDistGlob) ;
+    let maxDotsCoveredDist = 0, maxDotsCoveredTri = 0, circleToAdd = 0, dotsLeft = d.length, radiusEnough = (smallR > minDistGlob) ;
 
-    for (let j = 0; j < d.length; j++)
-        d[j].covered = false;
-    for (let j = 0; j < dist.length; j++)
-        dist[j].used = false;
+    for (let j = 0; j < d.length; j++) d[j].covered = false;
+    for (let j = 0; j < dist.length; j++) dist[j].used = false;
 
     while(dotsLeft > 0){
         if (radiusEnough) {
-            for (let i = 0; i < dist.length; i++) {
-                if (!dist[i].used) {
-                    newCircle = new Circle(dist[i]);
-                    newCircle.x = (dist[i].dot1.x + dist[i].dot2.x) / 2;
-                    newCircle.y = (dist[i].dot1.y + dist[i].dot2.y) / 2;
-                    for (let j = 0; j < d.length; j++)
-                        if (!d[j].covered && (Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
-                            newCircle.dotsCovered++;
+            let tX, tY;
+            for (let n = 0; n < d.length-2; n++)
+                for (let m = n+1; m < d.length-1; m++)
+                    for (let l = m+1; l < d.length; l++) {
+                        tX = -(d[n].y * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) + d[m].y * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) + d[l].y * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) / (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
+                        tY = (d[n].x * (d[m].x * d[m].x + d[m].y * d[m].y - d[l].x * d[l].x - d[l].y * d[l].y) + d[m].x * (d[l].x * d[l].x + d[l].y * d[l].y - d[n].x * d[n].x - d[n].y * d[n].y) + d[l].x * (d[n].x * d[n].x + d[n].y * d[n].y - d[m].x * d[m].x - d[m].y * d[m].y)) / (2 * (d[n].x * (d[m].y - d[l].y) + d[m].x * (d[l].y - d[n].y) + d[l].x * (d[n].y - d[m].y)));
 
-                    if (newCircle.dotsCovered > maxDotsCovered) {
-                        m = i;
-                        maxDotsCovered = newCircle.dotsCovered;
+                        newCircle = new Circle(tX, tY);
+
+                        for (let j = 0; j < d.length; j++)
+                            if (!d[j].covered && (Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
+                                newCircle.dotsCovered++;
+
+                        if (newCircle.dotsCovered > maxDotsCoveredDist && newCircle.dotsCovered > maxDotsCoveredTri) {
+                            circleToAdd = newCircle;
+                            maxDotsCoveredTri = newCircle.dotsCovered;
+                        }
                     }
+
+            for (let i = 0; i < dist.length; i++) {
+                tX = (dist[i].dot1.x + dist[i].dot2.x) / 2;
+                tY = (dist[i].dot1.y + dist[i].dot2.y) / 2;
+                newCircle = new Circle(tX, tY);
+                for (let j = 0; j < d.length; j++)
+                    if (!d[j].covered && (Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001)
+                        newCircle.dotsCovered++;
+
+                if (newCircle.dotsCovered > maxDotsCoveredDist && newCircle.dotsCovered > maxDotsCoveredTri) {
+                    circleToAdd = newCircle;
+                    maxDotsCoveredDist = newCircle.dotsCovered;
                 }
             }
-            if (maxDotsCovered > 1) {
-                newCircle = new Circle(dist[m]);
-                newCircle.x = (dist[m].dot1.x + dist[m].dot2.x) / 2;
-                newCircle.y = (dist[m].dot1.y + dist[m].dot2.y) / 2;
-                dist[m].used = true;
-                circles.push(newCircle);
-                dotsLeft -= maxDotsCovered;
+            let minusDots;
+            if ((minusDots = (maxDotsCoveredDist > maxDotsCoveredTri)? maxDotsCoveredDist : maxDotsCoveredTri) > 1) {
+                circles.push(circleToAdd);
+                dotsLeft -= minusDots;
                 for (let j = 0; j < d.length; j++)
-                    if ((Math.pow(d[j].x - newCircle.x, 2) + Math.pow(d[j].y - newCircle.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001) {
+                    if ((Math.pow(d[j].x - circleToAdd.x, 2) + Math.pow(d[j].y - circleToAdd.y, 2)) <= Math.round(smallR * smallR * 100000000.0) / 100000000.0 + 0.0001) {
                         d[j].covered = true;
-                        d[j].coveredBy = newCircle;
+                        d[j].coveredBy = circleToAdd;
                     }
-                maxDotsCovered = 0;
+                maxDotsCoveredDist = 0;
+                maxDotsCoveredTri = 0;
             } else
                 radiusEnough = false;
         } else {

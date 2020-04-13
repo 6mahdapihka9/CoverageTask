@@ -30,14 +30,14 @@
                     </label> Використовувати GoogleMaps
                     <hr>
 
-                    <div title="текст файлу повинен мати вигляд:X Y новий рядок X Y новий рядок...">
                     Зчитати координати з файлу
                     <input type="file" onchange="dataImport(this)">
                     <br>
                     <a id="downloadCoords" hidden>Зберегти файл з координатами</a>
                     <br>
                     <button id="inputByYourself" style="background-color: lightblue;">Нанести координати вручну</button>
-                    </div>
+                    <div id="pX"></div>
+                    <div id="pY"></div>
 
                     <hr>
                     Додати зображення
@@ -61,23 +61,12 @@
                     <hr>
 
                     <label>
-                        <input type="checkbox" name="builtOne" value="oneC" checked>
-                    </label> Побудувати одне коло
+                        <input type="checkbox" name="builtOne" value="oneC" checked disabled>
+                    </label> Глобальне коло
                     <br>
                     <label>
                         <input type="checkbox" name="builtMany" value="manyC" onchange="able_disableFormsMany()" checked>
-                    </label> Побудувати багато кіл
-                    <!--
-                    <div>
-                        <label>
-                            <input class="many" type="radio" name="withoutIntersections" value="withInter" disabled>
-                        </label> З перетином
-                        <br>
-                        <label>
-                            <input class="many" type="radio" name="withoutIntersections" value="withoutInter" disabled>
-                        </label> Без перетина
-                    </div>
-                    -->
+                    </label> Багато кіл з заданим радіусом
                     <br>
                     <label for="radius"></label><input id="radius" class="many" type="text" value="100" name="radius" placeholder="Введіть радіус">
                     <hr>
